@@ -1,0 +1,36 @@
+{*
+ * kitRegistry
+ *
+ * @author Ralf Hertsch (ralf.hertsch@phpmanufaktur.de)
+ * @link http://phpmanufaktur.de
+ * @copyright 2011
+ * @license GNU GPL (http://www.gnu.org/licenses/gpl.html)
+ * @version $Id$
+ *}
+<div id="reg_group_list">
+  <h2>{$head}</h2>
+  <div class="{if $is_message == 1}message{else}intro{/if}">{$intro}</div>
+  <table width="100%">
+    <colgroup>
+      <col width="50" />
+      <col width="200" />
+      <col width="*" />
+      <col width="100" />
+    </colgroup>
+    <tr>
+      <th>{$header.id}</th>
+      <th>{$header.group_id}</th>
+      <th>{$header.group_name}</th>
+      <th>{$header.status}</th>
+    </tr>
+    {foreach $groups grp}
+    <tr class="{cycle values=array('flip', 'flop')}">
+      <td class="reg_grp_id"><a href="{$grp.link}">{string_format($grp.id, '%03d')}</a></td>
+      <td class="reg_grp_group_id"><a href="{$grp.link}">{$grp.group_id}</a></td>
+      <td class="reg_grp_group_name">{$grp.group_name}</td>
+      <td class="reg_status">{$grp.status}</td>
+    </tr>
+    {/foreach}
+  </table>
+  {include('backend.group.edit.htt')}
+</div>

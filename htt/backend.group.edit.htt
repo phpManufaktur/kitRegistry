@@ -1,0 +1,48 @@
+{*
+ * kitRegistry
+ *
+ * @author Ralf Hertsch (ralf.hertsch@phpmanufaktur.de)
+ * @link http://phpmanufaktur.de
+ * @copyright 2011
+ * @license GNU GPL (http://www.gnu.org/licenses/gpl.html)
+ * @version $Id$
+ *}
+<div id="reg_group_edit">
+  <form name="form_grp_edit" action="{$form_action}" method="post">
+    <input type="hidden" name="{$action_name}" value="{$action_value}" />
+    <input type="hidden" name="{$group_name}" value="{$group_value}" />
+    <table width="100%">
+      <colgroup>
+        <col width="150" />
+        <col width="400" />
+        <col width="*" />
+      </colgroup>
+      {foreach $group grp}
+      <tr>
+        <td class="reg_grp_edit_label">{$grp.label}</td>
+        <td class="{$grp.name}">
+        {if $grp.name == 'grp_id'}
+          {if $grp.value > 0}<strong>{string_format($grp.value, '%03d')}</strong>{/if}
+        {elseif $grp.name == 'grp_status'}
+          <select name="{$grp.name}">
+            {foreach $grp.value option}<option value="{$option.value}"{if $option.selected == '1'} selected="selected"{/if}>{$option.text}</option>{/foreach}
+          </select>
+        {elseif $grp.name == 'grp_group_desc'}
+          <textarea name="{$grp.name}">{$grp.value}</textarea>
+        {else}
+          <input type="text" name="{$grp.name}" value="{$grp.value}" />
+        {/if}
+        </td>
+        <td class="reg_grp_edit_hint">{$grp.hint}</td>
+      </tr>
+      {/foreach}
+      <tr><td colspan="3">&nbsp;</td></tr>
+      <tr>
+        <td>&nbsp;</td>
+        <td colspan="2">
+          <input type="submit" value="{$btn_ok}" />&nbsp;<input type="button" value="{$btn_abort}" onclick="javascript: window.location = '{$abort_location}'; return false;" />
+        </td>
+      </tr>
+    </table>
+  </form>
+ </div>

@@ -1,0 +1,51 @@
+{*
+ * kitRegistry
+ *
+ * @author Ralf Hertsch (ralf.hertsch@phpmanufaktur.de)
+ * @link http://phpmanufaktur.de
+ * @copyright 2011
+ * @license GNU GPL (http://www.gnu.org/licenses/gpl.html)
+ * @version $Id$
+ *}
+<div id="reg_list">
+  <h2>{$head}</h2>
+  <div class="{if $is_message == 1}message{else}intro{/if}">{$intro}</div>
+  <ul class="nav_tab">
+  {foreach $tab_list tab}
+    <li{if ($tab == $tab_active || ($tab == '#' && $tab_active == 'special'))} class="selected"{/if}><a href="{$form_action}&{$tab_name}={if $tab == '#'}special{else}{$tab}{/if}">{$tab}</a></li>
+  {/foreach}
+  </ul>
+  <table width="100%">
+     <colgroup>
+       <col width="50" />
+       <col width="*" />
+       <col width="150" />
+       <col width="100" />
+       <col width="150" />
+       <col width="100" />
+     </colgroup>
+     <tr>
+       <th class="reg_list_id">{$header.id}</th>
+       <th class="reg_list_filename">{$header.filename}</th>
+       <th class="reg_list_group">{$header.group}</th>
+       <th class="reg_list_status">{$header.status}</th>
+       <th class="reg_list_filemtime">{$header.filemtime}</th>
+       <th class="reg_list_filesize">{$header.filesize}</th>
+     </tr>
+     {$i = 0}
+     {foreach $files file}{$i = $i+1}
+     <tr class="{cycle values=array('flip', 'flop')}">
+       <td class="reg_list_id"><a href="{$file.link}">{string_format($file.id, '%04d')}</a></td>
+       <td class="reg_list_filename">{$file.name_registry}</td>
+       <td class="reg_list_group">{$file.group}</td>
+       <td class="reg_list_status">{$file.status}</td>
+       <td class="reg_list_filemtime">{$file.file_datetime}</td>
+       <td class="reg_list_filesize">{$file.filesize}</td>
+     </tr>
+     {/foreach}
+     {if $i == 0}
+     <tr><td class="reg_tab_empty" colspan="6">{$msg_tab_empty}</td></tr>
+     {/if}
+  </table>
+  {include('backend.registry.replicate.htt')}
+</div>

@@ -1,0 +1,19 @@
+{**
+ * kitRegistry
+ *
+ * @author Ralf Hertsch (ralf.hertsch@phpmanufaktur.de)
+ * @link http://phpmanufaktur.de
+ * @copyright 2011
+ * @license GNU GPL (http://www.gnu.org/licenses/gpl.html)
+ * @version $Id$
+ *}
+<div class="registry_dialog">
+  <h2>{$header}</h2>
+  <div class="{if $is_message == 1}message{else}intro{/if}">{$intro}</div>
+  <div class="registry_search">
+    <form name="registry_upload" action="{$form_action}" method="post">
+      <input type="hidden" name="{$action_name}" value="{$action_value}" />
+      <input type="text" name="{$search_name}" /><input type="submit" value="{$btn_ok}" />
+    </form>
+  </div>
+</div>

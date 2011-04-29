@@ -1,0 +1,27 @@
+.registry_dialog {
+  clear: both;
+  margin: 0;
+  padding: 0;
+}
+.registry_dialog table {
+  border: none;
+  border-collapse: collapse;
+}
+.registry_dialog th {
+  background-color: #99b4d1;
+  color: #000;
+  font-size: 8pt;
+  font-weight: normal;
+  text-align: left;
+}
+.registry_dialog td {
+  font-size: 8pt;
+}
+.registry_dialog tr.flip {
+  color: #000;
+  background-color: #ffffcc;
+}
+.registry_dialog tr.flop {
+  color: #000;
+  background-color: transparent;
+}

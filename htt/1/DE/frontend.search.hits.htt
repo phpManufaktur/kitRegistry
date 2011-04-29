@@ -1,0 +1,20 @@
+{**
+ * kitRegistry
+ *
+ * @author Ralf Hertsch (ralf.hertsch@phpmanufaktur.de)
+ * @link http://phpmanufaktur.de
+ * @copyright 2011
+ * @license GNU GPL (http://www.gnu.org/licenses/gpl.html)
+ * @version $Id$
+ *}
+<div class="registry_dialog">
+  <h2>{$header}</h2>
+  <div class="intro">{$info}</div>
+  {foreach $hits hit}
+  <div class="registry_search_hit">
+    <b><a href="{$hit.download}">{$hit.file_registry}</a></b><br />
+    {$hit.description}
+  </div>
+  {/foreach}
+  <div class="go_back"><a href="{$go_back}">Neue Suche...</a></div>
+</div>

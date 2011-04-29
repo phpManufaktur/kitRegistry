@@ -1,0 +1,56 @@
+{*
+ * kitRegistry
+ *
+ * @author Ralf Hertsch (ralf.hertsch@phpmanufaktur.de)
+ * @link http://phpmanufaktur.de
+ * @copyright 2011
+ * @license GNU GPL (http://www.gnu.org/licenses/gpl.html)
+ * @version $Id$
+ *}
+<div id="reg_registry_edit">
+  <form name="registry_upload" enctype="multipart/form-data" action="{$form_action}" method="post">
+    <input type="hidden" name="{$action_name}" value="{$action_value}" />
+    <input type="hidden" name="{$id_name}" value="{$id_value}" />
+    <h2>{$head}</h2>
+    <div class="{if $is_message == 1}message{else}intro{/if}">{$intro}</div>
+    <table width="100%">
+      <colgroup>
+        <col width="200" />
+        <col width="400" />
+        <col width="*" />
+      </colgroup>
+      {foreach $items item}
+      <tr>
+        <td>{$item.label}</td>
+        <td class="{$item.name}">
+          {if ($item.name == 'fupl')}
+          <input type="file" name="{$item.name}" />
+          {elseif ($item.name == 'reg_protect_groups')}
+          <input type="text" name="{$item.name}" value="{$item.value}" />
+          {elseif ($item.name == 'reg_description' || $item.name == 'reg_keywords' || $item.name == 'reg_content')}
+          <textarea name="{$item.name}">{$item.value}</textarea>
+          {elseif ($item.name == 'reg_status' || $item.name == 'reg_protect')}
+          <select name="{$item.name}">
+            {foreach $item.value option}<option value="{$option.value}"{if $option.selected == 1} selected="selected"{/if}>{$option.text}</option>{/foreach}
+          </select>
+          {elseif $item.name == 'reg_content_groups'}
+          <select name="{$item.name}[]" multiple="multiple">
+            {foreach $item.value option}<option value="{$option.value}"{if $option.selected == 1} selected="selected"{/if}>{$option.text}</option>{/foreach}
+          </select>
+          {else}
+          {$item.value}
+          {/if}
+        </td>
+        <td>{$item.hint}</td>
+      </tr>
+      {/foreach}
+      <tr><td colspan="3">&nbsp;</td></tr>
+      <tr>
+        <td>&nbsp;</td>
+        <td colspan="2">
+          <input type="submit" value="{$btn_ok}" />&nbsp;<input type="button" value="{$btn_abort}" onclick="javascript: window.location = '{$abort_location}'; return false;" />
+        </td>
+      </tr>
+    </table>
+  </form>
+</div>

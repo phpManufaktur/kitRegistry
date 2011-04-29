@@ -22,7 +22,7 @@ $PRECHECK['WB_ADDONS'] = array(
 	'dwoo' => array('VERSION' => '0.10', 'OPERATOR' => '>='),
 	'droplets' => array('VERSION' => '1.0', 'OPERATOR' => '>='),
 	'kit' => array('VERSION' => '0.36', 'OPERATOR' => '>='),
-	'kit_dirlist' => array('VERSION' => '0.19', 'OPERATOR' => '>=')
+	'kit_dirlist' => array('VERSION' => '0.20', 'OPERATOR' => '>=')
 );
 
 global $database;  

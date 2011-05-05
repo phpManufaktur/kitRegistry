@@ -23,10 +23,11 @@ else {
 }
 
 require_once(WB_PATH.'/modules/'.basename(dirname(__FILE__)).'/class.droplets.php');
+require_once(WB_PATH.'/modules/'.basename(dirname(__FILE__)).'/class.registry.php');
 
 global $admin;
 
-$tables = array('db');
+$tables = array('dbKITregistryCfg', 'dbKITregistryFiles', 'dbKITregistryGroups');
 $error = '';
 
 foreach ($tables as $table) {

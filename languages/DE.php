@@ -113,7 +113,7 @@ define('reg_hint_status',											'');
 define('reg_intro_cfg',												'<p>Bearbeiten Sie die Einstellungen für <b>kitRegistry</b>.</p>');
 define('reg_intro_groups',										'<p>Mit diesem Dialog können Sie die Gruppen für <b>kitRegistry</b> erstellen und bearbeiten.</p><p>Um einen neuen Eintrag zu erstellen, geben Sie unten die Angaben für die Gruppe ein. Um eine bestehende Gruppe zu bearbeiten, wählen Sie diese in der Liste aus.</p>');
 define('reg_intro_registry_edit',							'<p>Mit diesem Dialog fügen Sie ein neues Dokument zu <b>kitRegistry</b> hinzu oder bearbeiten ein bereits im Archiv befindliches Dokument.</p>');
-define('reg_intro_registry_list',							'xx');
+define('reg_intro_registry_list',							'<p>Übersicht über die in kitRegistry erfassten Dokumente.</p>');
 define('reg_intro_search',										'Geben Sie den Begriff ein, nach dem das Archiv durchsucht werden soll.');
 
 define('reg_label_cfg_allowed_files',					'Erlaubte Dateitypen');

@@ -22,9 +22,11 @@ else {
 	if (!defined('KIT_REGISTRY_LANGUAGE')) define('KIT_REGISTRY_LANGUAGE', LANGUAGE); // die Konstante gibt an in welcher Sprache KIT Registry aktuell arbeitet
 }
 
+require_once(WB_PATH.'/modules/'.basename(dirname(__FILE__)).'/initialize.php');
+
 global $admin;
 
-$tables = array('db');
+$tables = array('dbKITregistryCfg', 'dbKITregistryFiles', 'dbKITregistryGroups');
 $error = '';
 
 foreach ($tables as $table) {

@@ -69,9 +69,9 @@ global $registryTools;
 global $dbKITregistryGroups;
 
 if (!is_object($parser)) $parser = new Dwoo();
-if (!is_object($dbKITregistryFiles)) $dbKITregistryFiles = new dbKITRegistryFiles(true);
+if (!is_object($dbKITregistryFiles)) $dbKITregistryFiles = new dbKITregistryFiles();
 if (!is_object($dbKITregistryCfg)) $dbKITregistryCfg = new dbKITregistryCfg();
 if (!is_object($registryTools)) $registryTools = new kitRegistryTools();
-if (!is_object($dbKITregistryGroups)) $dbKITregistryGroups = new dbKITregistryGroups(true);
+if (!is_object($dbKITregistryGroups)) $dbKITregistryGroups = new dbKITregistryGroups();
 
 ?>

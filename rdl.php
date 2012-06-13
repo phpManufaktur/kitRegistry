@@ -1,7 +1,7 @@
 <?php
 /**
  * kitRegistry
- * 
+ *
  * @author Ralf Hertsch (ralf.hertsch@phpmanufaktur.de)
  * @link http://phpmanufaktur.de
  * @copyright 2011
@@ -15,7 +15,7 @@ if (!file_exists($config_path)) {
 	$config_path = 'config.php';
 	if (!file_exists($config_path)) {
 		die('Missing Configuration File...');
-	} 
+	}
 }
 require_once($config_path);
 require_once(WB_PATH.'/modules/kit_registry/initialize.php');
@@ -61,10 +61,10 @@ elseif ($file[dbKITregistryFiles::field_protect] == dbKITregistryFiles::protect_
 	// start download
 	header('Content-type: application/force-download');
 	header('Content-Transfer-Encoding: Binary');
-	header('Content-length: '.$file[dbKITregistryFiles::field_filesize]); 
+	if ($file[dbKITregistryFiles::field_filesize] > 0) header('Content-length: '.$file[dbKITregistryFiles::field_filesize]);
 	header('Content-disposition: attachment;filename="'.$file[dbKITregistryFiles::field_filename_registry].'"');
 	readfile($file[dbKITregistryFiles::field_filepath_registry]);
-	exit();						
+	exit();
 }
 else {
 	// Berechtigung pruefen
@@ -77,17 +77,17 @@ else {
 				kitRegistry::request_action => kitRegistry::action_login,
 				kitRegistry::request_file => $id
 			);
-			$registryTools->getPageLinkByPageID($login_id, $url, $link); 
+			$registryTools->getPageLinkByPageID($login_id, $url, $link);
 			header('Location: '.$url);
 			exit();
-		}		
-	} 
+		}
+	}
 	//print_r($_SESSION);
-	//exit('kkl');	
+	//exit('kkl');
 	// ... und berechtigt
 	header('Content-type: application/force-download');
 	header('Content-Transfer-Encoding: Binary');
-	header('Content-length: '.$file[dbKITregistryFiles::field_filesize]); 
+	if ($file[dbKITregistryFiles::field_filesize] > 0) header('Content-length: '.$file[dbKITregistryFiles::field_filesize]);
 	header('Content-disposition: attachment;filename="'.$file[dbKITregistryFiles::field_filename_registry].'"');
 	readfile($file[dbKITregistryFiles::field_filepath_registry]);
 	exit();

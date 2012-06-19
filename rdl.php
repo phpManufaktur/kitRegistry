@@ -1,12 +1,12 @@
 <?php
+
 /**
  * kitRegistry
  *
- * @author Ralf Hertsch (ralf.hertsch@phpmanufaktur.de)
+ * @author Ralf Hertsch <ralf.hertsch@phpmanufaktur.de>
  * @link http://phpmanufaktur.de
- * @copyright 2011
- * @license GNU GPL (http://www.gnu.org/licenses/gpl.html)
- * @version $Id$
+ * @copyright 2011 - 2012
+ * @license MIT License (MIT) http://www.opensource.org/licenses/MIT
  */
 
 // Include config file
@@ -87,7 +87,8 @@ else {
 	// ... und berechtigt
 	header('Content-type: application/force-download');
 	header('Content-Transfer-Encoding: Binary');
-	if ($file[dbKITregistryFiles::field_filesize] > 0) header('Content-length: '.$file[dbKITregistryFiles::field_filesize]);
+	if ($file[dbKITregistryFiles::field_filesize] > 0)
+	  header('Content-length: '.$file[dbKITregistryFiles::field_filesize]);
 	header('Content-disposition: attachment;filename="'.$file[dbKITregistryFiles::field_filename_registry].'"');
 	readfile($file[dbKITregistryFiles::field_filepath_registry]);
 	exit();

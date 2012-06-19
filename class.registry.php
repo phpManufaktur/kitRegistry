@@ -1,21 +1,40 @@
 <?php
+
 /**
  * kitRegistry
- * 
- * @author Ralf Hertsch (ralf.hertsch@phpmanufaktur.de)
+ *
+ * @author Ralf Hertsch <ralf.hertsch@phpmanufaktur.de>
  * @link http://phpmanufaktur.de
- * @copyright 2011
- * @license GNU GPL (http://www.gnu.org/licenses/gpl.html)
- * @version $Id$
+ * @copyright 2011 - 2012
+ * @license MIT License (MIT) http://www.opensource.org/licenses/MIT
  */
 
-// prevent this file from being accessed directly
-if (!defined('WB_PATH')) die('invalid call of '.$_SERVER['SCRIPT_NAME']);
+// include class.secure.php to protect this file and the whole CMS!
+if (defined('WB_PATH')) {
+  if (defined('LEPTON_VERSION'))
+    include(WB_PATH.'/framework/class.secure.php');
+}
+else {
+  $oneback = "../";
+  $root = $oneback;
+  $level = 1;
+  while (($level < 10) && (!file_exists($root.'/framework/class.secure.php'))) {
+    $root .= $oneback;
+    $level += 1;
+  }
+  if (file_exists($root.'/framework/class.secure.php')) {
+    include($root.'/framework/class.secure.php');
+  }
+  else {
+    trigger_error(sprintf("[ <b>%s</b> ] Can't include class.secure.php!", $_SERVER['SCRIPT_NAME']), E_USER_ERROR);
+  }
+}
+// end include class.secure.php
 
 require_once(WB_PATH.'/modules/'.basename(dirname(__FILE__)).'/initialize.php');
 
 class dbKITregistryFiles extends dbConnectLE {
-	
+
 	const field_id									= 'reg_id';
 	const field_filename_original		= 'reg_file_original';
 	const field_filename_registry		= 'reg_file_registry';
@@ -28,27 +47,27 @@ class dbKITregistryFiles extends dbConnectLE {
 	const field_sub_dir							= 'reg_sub_dir';
 	const field_description					= 'reg_description';
 	const field_keywords						= 'reg_keywords';
-	const field_content							= 'reg_content';	
+	const field_content							= 'reg_content';
 	const field_content_groups			= 'reg_content_groups';
 	const field_protect							= 'reg_protect';
 	const field_protect_groups			= 'reg_protect_groups';
 	const field_status							= 'reg_status';
 	const field_timestamp						= 'reg_timestamp';
-	
+
 	const status_active							= 1;
 	const status_locked							= 0;
 	const status_removed						= 3;
 	const status_outdated						= 4;
-	const status_deleted						= -1; 
-	
+	const status_deleted						= -1;
+
 	public $status_array = array(
 		self::status_active			=> reg_status_active,
 		self::status_locked			=> reg_status_locked,
 		self::status_removed		=> reg_status_removed,
 		self::status_outdated		=> reg_status_outdated,
-		self::status_deleted		=> reg_status_deleted 
+		self::status_deleted		=> reg_status_deleted
 	);
-	
+
 	// PROTECT - muessen mit Definitionen in class.dirlist.php identisch sein!
 	const protect_none				= 'nn';
 	const protect_undefined		= 'udf';
@@ -58,7 +77,7 @@ class dbKITregistryFiles extends dbConnectLE {
 	const protect_kit_intern	= 'kint';
 	//const protect_wb_auto			= 'waut';
 	const protect_wb_group		= 'wgrp';
-	
+
 	public $protect_array = array(
 		self::protect_none				=> reg_protect_none,
 		self::protect_kit_dist		=> reg_protect_kit_dist,
@@ -67,9 +86,9 @@ class dbKITregistryFiles extends dbConnectLE {
 		self::protect_wb_group		=> reg_protect_wb_group,
 		self::protect_undefined		=> reg_protect_undefined
 	);
-	
+
 	private $createTables 		= false;
-  
+
   public function __construct($createTables = false) {
   	$this->createTables = $createTables;
   	parent::__construct();
@@ -89,8 +108,8 @@ class dbKITregistryFiles extends dbConnectLE {
   	$this->addFieldDefinition(self::field_content, "TEXT NOT NULL DEFAULT ''");
   	$this->addFieldDefinition(self::field_content_groups, "VARCHAR(255) NOT NULL DEFAULT ''");
   	$this->addFieldDefinition(self::field_protect, "VARCHAR(10) NOT NULL DEFAULT '".self::protect_undefined."'");
-  	$this->addFieldDefinition(self::field_protect_groups, "TEXT NOT NULL DEFAULT ''"); 
-  	$this->addFieldDefinition(self::field_status, "TINYINT NOT NULL DEFAULT '".self::status_active."'"); 
+  	$this->addFieldDefinition(self::field_protect_groups, "TEXT NOT NULL DEFAULT ''");
+  	$this->addFieldDefinition(self::field_status, "TINYINT NOT NULL DEFAULT '".self::status_active."'");
   	$this->addFieldDefinition(self::field_timestamp, "TIMESTAMP");
   	$this->setIndexFields(array(self::field_filename_registry));
   	$this->checkFieldDefinitions();
@@ -103,11 +122,11 @@ class dbKITregistryFiles extends dbConnectLE {
   		}
   	}
   } // __construct()
-	
+
 } // class dbKITregistryFiles
 
 class dbKITregistryGroups extends dbConnectLE {
-	
+
 	const field_id						= 'grp_id';
 	const field_group_id			= 'grp_group_id';
 	const field_group_name		= 'grp_group_name';
@@ -117,16 +136,16 @@ class dbKITregistryGroups extends dbConnectLE {
 
 	const status_active							= 1;
 	const status_locked							= 0;
-	const status_deleted						= -1; 
-	
+	const status_deleted						= -1;
+
 	public $status_array = array(
 		self::status_active			=> reg_status_active,
 		self::status_locked			=> reg_status_locked,
-		self::status_deleted		=> reg_status_deleted 
+		self::status_deleted		=> reg_status_deleted
 	);
-	
+
 	private $createTables 		= false;
-  
+
   public function __construct($createTables = false) {
   	$this->createTables = $createTables;
   	parent::__construct();
@@ -135,7 +154,7 @@ class dbKITregistryGroups extends dbConnectLE {
   	$this->addFieldDefinition(self::field_group_id, "VARCHAR(25) NOT NULL DEFAULT ''");
   	$this->addFieldDefinition(self::field_group_name, "VARCHAR(255) NOT NULL DEFAULT ''");
   	$this->addFieldDefinition(self::field_group_desc, "TEXT NOT NULL DEFAULT ''");
-  	$this->addFieldDefinition(self::field_status, "TINYINT NOT NULL DEFAULT '".self::status_active."'"); 
+  	$this->addFieldDefinition(self::field_status, "TINYINT NOT NULL DEFAULT '".self::status_active."'");
   	$this->addFieldDefinition(self::field_timestamp, "TIMESTAMP");
   	$this->checkFieldDefinitions();
   	// Tabelle erstellen
@@ -147,12 +166,12 @@ class dbKITregistryGroups extends dbConnectLE {
   		}
   	}
   } // __construct()
-	
+
 } // class dbKITregistryGroups
 
 class dbKITregistryCfg extends dbConnectLE {
-	
-	const field_id						= 'cfg_id'; 
+
+	const field_id						= 'cfg_id';
 	const field_name					= 'cfg_name';
 	const field_type					= 'cfg_type';
 	const field_value					= 'cfg_value';
@@ -160,10 +179,10 @@ class dbKITregistryCfg extends dbConnectLE {
 	const field_description		= 'cfg_desc';
 	const field_status				= 'cfg_status';
 	const field_timestamp			= 'cfg_timestamp';
-	
+
 	const status_active				= 1;
 	const status_deleted			= 0;
-	
+
 	const type_undefined			= 0;
 	const type_array					= 7;
   const type_boolean				= 1;
@@ -173,7 +192,7 @@ class dbKITregistryCfg extends dbConnectLE {
   const type_path						= 5;
   const type_string					= 6;
   const type_url						= 8;
-  
+
   public $type_array = array(
   	self::type_undefined		=> '-UNDEFINED-',
   	self::type_array				=> 'ARRAY',
@@ -185,22 +204,22 @@ class dbKITregistryCfg extends dbConnectLE {
   	self::type_string				=> 'STRING',
   	self::type_url					=> 'URL'
   );
-  
+
   private $createTables 		= false;
   private $message					= '';
-    
+
   const cfgRegistryExec				= 'cfgRegistryExec';
   const cfgRegistryListTabs		= 'cfgRegistryListTabs';
   const cfgAllowedFileTypes		= 'cfgAllowedFileTypes';
   const cfgRegistryDroplet		= 'cfgRegistryDroplet';
-  
+
   public $config_array = array(
   	array('reg_label_cfg_exec', self::cfgRegistryExec, self::type_boolean, '1', 'reg_desc_cfg_exec'),
   	array('reg_label_cfg_list_tabs', self::cfgRegistryListTabs, self::type_array, 'a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,0,1,2,3,4,5,6,7,8,9,#', 'reg_desc_cfg_list_tabs'),
   	array('reg_label_cfg_allowed_files', self::cfgAllowedFileTypes, self::type_array, 'pdf,doc,txt', 'reg_desc_cfg_allowed_files'),
   	array('reg_label_cfg_registry_droplet', self::cfgRegistryDroplet, self::type_integer, '-1', 'reg_desc_cfg_registry_droplet')
-  );  
-  
+  );
+
   public function __construct($createTables = false) {
   	$this->createTables = $createTables;
   	parent::__construct();
@@ -230,14 +249,14 @@ class dbKITregistryCfg extends dbConnectLE {
   	}
   	date_default_timezone_set(reg_cfg_time_zone);
   } // __construct()
-  
+
   public function setMessage($message) {
     $this->message = $message;
   } // setMessage()
 
   /**
     * Get Message from $this->message;
-    * 
+    *
     * @return STR $this->message
     */
   public function getMessage() {
@@ -246,21 +265,21 @@ class dbKITregistryCfg extends dbConnectLE {
 
   /**
     * Check if $this->message is empty
-    * 
+    *
     * @return BOOL
     */
   public function isMessage() {
     return (bool) !empty($this->message);
   } // isMessage
-  
+
   /**
    * Aktualisiert den Wert $new_value des Datensatz $name
-   * 
+   *
    * @param $new_value STR - Wert, der uebernommen werden soll
    * @param $id INT - ID des Datensatz, dessen Wert aktualisiert werden soll
-   * 
+   *
    * @return BOOL Ergebnis
-   * 
+   *
    */
   public function setValueByName($new_value, $name) {
   	$where = array();
@@ -276,7 +295,7 @@ class dbKITregistryCfg extends dbConnectLE {
   	}
   	return $this->setValue($new_value, $config[0][self::field_id]);
   } // setValueByName()
-  
+
   /**
    * Haengt einen Slash an das Ende des uebergebenen Strings
    * wenn das letzte Zeichen noch kein Slash ist
@@ -286,9 +305,9 @@ class dbKITregistryCfg extends dbConnectLE {
    */
   public function addSlash($path) {
   	$path = substr($path, strlen($path)-1, 1) == "/" ? $path : $path."/";
-  	return $path;  
+  	return $path;
   }
-  
+
   /**
    * Wandelt einen String in einen Float Wert um.
    * Geht davon aus, dass Dezimalzahlen mit ',' und nicht mit '.'
@@ -310,7 +329,7 @@ class dbKITregistryCfg extends dbConnectLE {
 		$int = intval($string);
 		return $int;
   }
-  
+
 	/**
 	 * Ueberprueft die uebergebene E-Mail Adresse auf logische Gueltigkeit
 	 *
@@ -323,13 +342,13 @@ class dbKITregistryCfg extends dbConnectLE {
 		else {
 			return false; }
 	}
-  
+
   /**
    * Aktualisiert den Wert $new_value des Datensatz $id
-   * 
+   *
    * @param $new_value STR - Wert, der uebernommen werden soll
    * @param $id INT - ID des Datensatz, dessen Wert aktualisiert werden soll
-   * 
+   *
    * @return BOOL Ergebnis
    */
   public function setValue($new_value, $id) {
@@ -354,7 +373,7 @@ class dbKITregistryCfg extends dbConnectLE {
   		foreach ($worker as $item) {
   			$data[] = trim($item);
   		};
-  		$value = implode(",", $data);  			
+  		$value = implode(",", $data);
   		break;
   	case self::type_boolean:
   		$value = (bool) $new_value;
@@ -366,7 +385,7 @@ class dbKITregistryCfg extends dbConnectLE {
   		}
   		else {
   			$this->setMessage(sprintf(reg_msg_invalid_email, $new_value));
-  			return false;			
+  			return false;
   		}
   		break;
   	case self::type_float:
@@ -393,12 +412,12 @@ class dbKITregistryCfg extends dbConnectLE {
   	}
   	return true;
   } // setValue()
-  
+
   /**
    * Gibt den angeforderten Wert zurueck
-   * 
-   * @param $name - Bezeichner 
-   * 
+   *
+   * @param $name - Bezeichner
+   *
    * @return WERT entsprechend des TYP
    */
   public function getValue($name) {
@@ -440,7 +459,7 @@ class dbKITregistryCfg extends dbConnectLE {
   	endswitch;
   	return $result;
   } // getValue()
-  
+
   public function checkConfig() {
   	foreach ($this->config_array as $item) {
   		$where = array();
@@ -466,7 +485,7 @@ class dbKITregistryCfg extends dbConnectLE {
   	}
   	return true;
   }
-	  
+
 } // class dbEventCfg
 
 ?>

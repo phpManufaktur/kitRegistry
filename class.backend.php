@@ -1,27 +1,46 @@
 <?php
+
 /**
  * kitRegistry
- * 
- * @author Ralf Hertsch (ralf.hertsch@phpmanufaktur.de)
+ *
+ * @author Ralf Hertsch <ralf.hertsch@phpmanufaktur.de>
  * @link http://phpmanufaktur.de
- * @copyright 2011
- * @license GNU GPL (http://www.gnu.org/licenses/gpl.html)
- * @version $Id$
+ * @copyright 2011 - 2012
+ * @license MIT License (MIT) http://www.opensource.org/licenses/MIT
  */
 
-// prevent this file from being accessed directly
-if (!defined('WB_PATH')) die('invalid call of '.$_SERVER['SCRIPT_NAME']);
+// include class.secure.php to protect this file and the whole CMS!
+if (defined('WB_PATH')) {
+  if (defined('LEPTON_VERSION'))
+    include(WB_PATH.'/framework/class.secure.php');
+}
+else {
+  $oneback = "../";
+  $root = $oneback;
+  $level = 1;
+  while (($level < 10) && (!file_exists($root.'/framework/class.secure.php'))) {
+    $root .= $oneback;
+    $level += 1;
+  }
+  if (file_exists($root.'/framework/class.secure.php')) {
+    include($root.'/framework/class.secure.php');
+  }
+  else {
+    trigger_error(sprintf("[ <b>%s</b> ] Can't include class.secure.php!", $_SERVER['SCRIPT_NAME']), E_USER_ERROR);
+  }
+}
+// end include class.secure.php
 
 require_once(WB_PATH.'/modules/'.basename(dirname(__FILE__)).'/initialize.php');
 require_once(WB_PATH.'/framework/functions.php');
 
 class registryBackend {
-	
+
 	const request_action						= 'act';
 	const request_items							= 'its';
 	const request_tab								= 'tab';
 	const request_file							= 'fupl';
-	
+
 	const action_about							= 'abt';
 	const action_config							= 'cfg';
 	const action_config_check				= 'cfgc';
@@ -32,7 +51,7 @@ class registryBackend {
 	const action_edit_check					= 'edtc';
 	const action_list								= 'lst';
 	const action_replicate					= 'rpl';
-	
+
 	private $tab_navigation_array = array(
 		self::action_list								=> reg_tab_list,
 		self::action_edit								=> reg_tab_edit,
@@ -40,14 +59,14 @@ class registryBackend {
 		self::action_config							=> reg_tab_config,
 		self::action_about							=> reg_tab_about
 	);
-	
+
 	private $page_link 					= '';
 	private $img_url						= '';
 	private $template_path			= '';
 	private $error							= '';
 	private $message						= '';
 	private $registry_path			= '';
-	
+
 	public function __construct() {
 		$this->page_link = ADMIN_URL.'/admintools/tool.php?tool=kit_registry';
 		$this->template_path = WB_PATH . '/modules/' . basename(dirname(__FILE__)) . '/htt/' ;
@@ -55,10 +74,10 @@ class registryBackend {
 		date_default_timezone_set(reg_cfg_time_zone);
 		$this->registry_path = WB_PATH.MEDIA_DIRECTORY.'/kit_protected/registry/';
 	} // __construct()
-	
+
 	/**
     * Set $this->error to $error
-    * 
+    *
     * @param STR $error
     */
   public function setError($error) {
@@ -69,7 +88,7 @@ class registryBackend {
 
   /**
     * Get Error from $this->error;
-    * 
+    *
     * @return STR $this->error
     */
   public function getError() {
@@ -78,7 +97,7 @@ class registryBackend {
 
   /**
     * Check if $this->error is empty
-    * 
+    *
     * @return BOOL
     */
   public function isError() {
@@ -93,7 +112,7 @@ class registryBackend {
   }
 
   /** Set $this->message to $message
-    * 
+    *
     * @param STR $message
     */
   public function setMessage($message) {
@@ -102,7 +121,7 @@ class registryBackend {
 
   /**
     * Get Message from $this->message;
-    * 
+    *
     * @return STR $this->message
     */
   public function getMessage() {
@@ -111,13 +130,13 @@ class registryBackend {
 
   /**
     * Check if $this->message is empty
-    * 
+    *
     * @return BOOL
     */
   public function isMessage() {
     return (bool) !empty($this->message);
   } // isMessage
-  
+
   /**
    * Return Version of Module
    *
@@ -127,7 +146,7 @@ class registryBackend {
     // read info.php into array
     $info_text = file(WB_PATH.'/modules/'.basename(dirname(__FILE__)).'/info.php');
     if ($info_text == false) {
-      return -1; 
+      return -1;
     }
     // walk through array
     foreach ($info_text as $item) {
@@ -136,30 +155,30 @@ class registryBackend {
         $value = explode('=', $item);
         // return floatval
         return floatval(preg_replace('([\'";,\(\)[:space:][:alpha:]])', '', $value[1]));
-      } 
+      }
     }
     return -1;
   } // getVersion()
-  
+
   public function getTemplate($template, $template_data) {
   	global $parser;
   	try {
-  		$result = $parser->get($this->template_path.$template, $template_data); 
+  		$result = $parser->get($this->template_path.$template, $template_data);
   	} catch (Exception $e) {
   		$this->setError(sprintf(reg_error_template_error, $template, $e->getMessage()));
   		return false;
   	}
   	return $result;
   } // getTemplate()
-  
-  
+
+
   /**
    * Verhindert XSS Cross Site Scripting
-   * 
+   *
    * @param REFERENCE $_REQUEST Array
    * @return $request
    */
-	public function xssPrevent(&$request) { 
+	public function xssPrevent(&$request) {
   	if (is_string($request)) {
 	    $request = html_entity_decode($request);
 	    $request = strip_tags($request);
@@ -168,13 +187,13 @@ class registryBackend {
   	}
 	  return $request;
   } // xssPrevent()
-	
+
   public function action() {
   	$html_allowed = array();
   	foreach ($_REQUEST as $key => $value) {
   		if (!in_array($key, $html_allowed)) {
-  			$_REQUEST[$key] = $this->xssPrevent($value);	  			
-  		} 
+  			$_REQUEST[$key] = $this->xssPrevent($value);
+  		}
   	}
     isset($_REQUEST[self::request_action]) ? $action = $_REQUEST[self::request_action] : $action = self::action_default;
   	switch ($action):
@@ -208,14 +227,14 @@ class registryBackend {
   		break;
   	endswitch;
   } // action
-	
-  	
+
+
   /**
    * Ausgabe des formatierten Ergebnis mit Navigationsleiste
-   * 
+   *
    * @param $action - aktives Navigationselement
    * @param $content - Inhalt
-   * 
+   *
    * @return ECHO RESULT
    */
   public function show($action, $content) {
@@ -240,18 +259,18 @@ class registryBackend {
   	$data = array(
   		'version'					=> sprintf('%01.2f', $this->getVersion()),
   		'img_url'					=> $this->img_url.'/kit_registry_logo_450_294.jpg',
-  		'release_notes'		=> file_get_contents(WB_PATH.'/modules/'.basename(dirname(__FILE__)).'/info.txt'),
+  		'release_notes'		=> file_get_contents(WB_PATH.'/modules/'.basename(dirname(__FILE__)).'/CHANGELOG'),
   	);
   	return $this->getTemplate('backend.about.htt', $data);
   } // dlgAbout()
-  
+
   public function dlgRegistryList() {
   	global $dbKITregistryFiles;
   	global $dbKITregistryCfg;
   	global $registryTools;
-  	
+
   	$tab_list = $dbKITregistryCfg->getValue(dbKITregistryCfg::cfgRegistryListTabs);
-  	
+
   	$tab = (isset($_REQUEST[self::request_tab])) ? $_REQUEST[self::request_tab] : $tab_list[0];
   	$SQL = sprintf(	"SELECT * FROM %s WHERE %s='%s' AND %s!='%s' ORDER BY %s",
   									$dbKITregistryFiles->getTableName(),
@@ -275,10 +294,10 @@ class registryBackend {
   			'status'				=> $dbKITregistryFiles->status_array[$file[dbKITregistryFiles::field_status]],
   			'filemtime'			=> $file[dbKITregistryFiles::field_filemtime],
   			'file_datetime'	=> date(reg_cfg_datetime_str, $file[dbKITregistryFiles::field_filemtime]),
-  			'filesize'			=> $registryTools->bytes2Str($file[dbKITregistryFiles::field_filesize])		
+  			'filesize'			=> $registryTools->bytes2Str($file[dbKITregistryFiles::field_filesize])
   		);
   	}
-  	
+
   	$header = array(
   		'id'							=> reg_th_id,
   		'filename'				=> reg_th_filename,
@@ -287,7 +306,7 @@ class registryBackend {
   		'filemtime'				=> reg_th_filemtime,
   		'filesize'				=> reg_th_filesize
   	);
-  	
+
   	$data = array(
   		'head'							=> reg_header_registry_list,
   		'intro'							=> ($this->isMessage()) ? $this->getMessage() : reg_intro_registry_list,
@@ -308,26 +327,26 @@ class registryBackend {
   	);
   	return $this->getTemplate('backend.registry.list.htt', $data);
   } // dlgRegistryList()
-  
+
   /**
    * Das Registry Verzeichni scannen und mit der Datenbank abgleichen
-   * 
+   *
    * @param STR $directory
    */
   private function scan_registry_dir($directory, &$message = '') {
   	global $dbKITregistryFiles;
   	global $dbKITregistryCfg;
-  	
+
   	$sub_dirs = $dbKITregistryCfg->getValue(dbKITregistryCfg::cfgRegistryListTabs);
-  	
-    $handle =  opendir($directory); 
-    while ($file = readdir($handle)) { 
-      if ($file != "." && $file != "..") { 
-        if (is_dir($directory.$file)) {  
+
+    $handle =  opendir($directory);
+    while ($file = readdir($handle)) {
+      if ($file != "." && $file != "..") {
+        if (is_dir($directory.$file)) {
           // Erneuter Funktionsaufruf, um das aktuelle Verzeichnis auszulesen
-          $this->scan_registry_dir($directory.$file.'/'); 
+          $this->scan_registry_dir($directory.$file.'/');
         }
-        else { 
+        else {
           // Wenn Verzeichnis-Eintrag eine Datei ist, diese ausgeben
           $actual_file = page_filename(utf8_encode($file));
           $actual_file = $directory.$actual_file;
@@ -352,7 +371,7 @@ class registryBackend {
           		$update[dbKITregistryFiles::field_status] = dbKITregistryFiles::status_active;
           		$message .= sprintf(reg_msg_registry_file_undeleted, $data[dbKITregistryFiles::field_filename_registry]);
           	}
-          	if (count($update) > 0) { 
+          	if (count($update) > 0) {
           		$where = array(dbKITregistryFiles::field_id => $data[dbKITregistryFiles::field_id]);
           		if (!$dbKITregistryFiles->sqlUpdateRecord($update, $where)) {
           			$this->setError($dbKITregistryFiles->getError());
@@ -387,9 +406,9 @@ class registryBackend {
           		if (!rename($actual_file, $check_file)) {
           			$this->setError(sprintf(reg_error_rename_file, basename($actual_file), '/'.$sub_dir.'/'.basename($check_file)));
           			return false;
-          		} 
+          		}
           		$message .= sprintf(reg_msg_registry_file_moved, basename($actual_file), $sub_dir);
-          		$actual_file = $check_file; 
+          		$actual_file = $check_file;
           	}
           	$data = array(
           		dbKITregistryFiles::field_filename_original			=> utf8_encode(basename($directory.$file)),
@@ -408,30 +427,30 @@ class registryBackend {
           	}
           	$message .= sprintf(reg_msg_registry_file_added, $data[dbKITregistryFiles::field_filename_registry]);
           }
-        } 
+        }
       }
-    } 
-    closedir($handle); 
-  } // dir_rekursiv() 
-  
+    }
+    closedir($handle);
+  } // dir_rekursiv()
+
   public function actionReplicate() {
   	$message = '';
   	if (!file_exists($this->registry_path)) {
   		if (mkdir($this->registry_path, 0755, true) == true) {
-  			$message .= reg_msg_registry_mkdir; 
+  			$message .= reg_msg_registry_mkdir;
   		}
   		else {
   			$this->setError(reg_error_registry_mkdir);
   			return false;
   		}
   	}
-  	
+
   	$this->scan_registry_dir($this->registry_path, $message);
-  	
+
   	$this->setMessage($message);
   	return $this->dlgRegistryList();
   } // actionReplicate()
-  
+
   public function dlgConfig() {
 		global $dbKITregistryCfg;
 		$SQL = sprintf(	"SELECT * FROM %s WHERE NOT %s='%s' ORDER BY %s",
@@ -450,7 +469,7 @@ class registryBackend {
 			'value'				=> reg_header_cfg_value,
 			'description'	=> reg_header_cfg_description
 		);
-		
+
 		$items = array();
 		// bestehende Eintraege auflisten
 		foreach ($config as $entry) {
@@ -463,7 +482,7 @@ class registryBackend {
 				'identifier'	=> constant($entry[dbKITregistryCfg::field_label]),
 				'value'				=> $value,
 				'name'				=> sprintf('%s_%s', dbKITregistryCfg::field_value, $id),
-				'description'	=> constant($entry[dbKITregistryCfg::field_description])  
+				'description'	=> constant($entry[dbKITregistryCfg::field_description])
 			);
 		}
 		$data = array(
@@ -472,7 +491,7 @@ class registryBackend {
 			'action_name'					=> self::request_action,
 			'action_value'				=> self::action_config_check,
 			'items_name'					=> self::request_items,
-			'items_value'					=> implode(",", $count), 
+			'items_value'					=> implode(",", $count),
 			'head'								=> reg_header_cfg,
 			'intro'								=> $this->isMessage() ? $this->getMessage() : reg_intro_cfg,
 			'is_message'					=> $this->isMessage() ? 1 : 0,
@@ -484,11 +503,11 @@ class registryBackend {
 		);
 		return $this->getTemplate('backend.config.htt', $data);
 	} // dlgConfig()
-	
+
 	/**
 	 * Ueberprueft Aenderungen die im Dialog dlgConfig() vorgenommen wurden
 	 * und aktualisiert die entsprechenden Datensaetze.
-	 * 
+	 *
 	 * @return STR DIALOG dlgConfig()
 	 */
 	public function checkConfig() {
@@ -501,7 +520,7 @@ class registryBackend {
 				if (isset($_REQUEST[dbKITregistryCfg::field_value.'_'.$id])) {
 					$value = $_REQUEST[dbKITregistryCfg::field_value.'_'.$id];
 					$where = array();
-					$where[dbKITregistryCfg::field_id] = $id; 
+					$where[dbKITregistryCfg::field_id] = $id;
 					$config = array();
 					if (!$dbKITregistryCfg->sqlSelectRecord($where, $config)) {
 						$this->setError(sprintf('[%s - %s] %s', __METHOD__, __LINE__, $dbKITregistryCfg->getError()));
@@ -527,19 +546,19 @@ class registryBackend {
 							}
 					}
 				}
-			}		
-		}		
+			}
+		}
 		$this->setMessage($message);
 		return $this->dlgConfig();
 	} // checkConfig()
-  
+
 	public function dlgEdit() {
 		global $dbKITregistryFiles;
 		global $registryTools;
-		global $dbKITregistryGroups; 
-		
+		global $dbKITregistryGroups;
+
 		$id = isset($_REQUEST[dbKITregistryFiles::field_id]) ? $_REQUEST[dbKITregistryFiles::field_id] : -1;
-		
+
 		if ($id > 0) {
 			// existierender Datensatz
 			$where = array(dbKITregistryFiles::field_id => $id);
@@ -568,13 +587,13 @@ class registryBackend {
 				if (isset($_REQUEST[$key])) $file[$key] = $_REQUEST[$key];
 			endswitch;
 		}
-		
+
 		// maximale Uploadgroesse
 		$post_max_size = $registryTools->convertBytes(ini_get('post_max_size'));
 		$upload_max_filesize = $registryTools->convertBytes(ini_get('upload_max_filesize'));
 		$max_size = ($post_max_size >= $upload_max_filesize) ? $upload_max_filesize : $post_max_size;
 		$max_size = $registryTools->bytes2Str($max_size);
-			
+
 		// Status
 		$status_array = array();
 		foreach ($dbKITregistryFiles->status_array as $value => $text) {
@@ -584,7 +603,7 @@ class registryBackend {
 				'selected'	=> ($file[dbKITregistryFiles::field_status] == $value) ? 1 : 0
 			);
 		}
-		
+
 		// Protection
 		$protect_array = array();
 		foreach ($dbKITregistryFiles->protect_array as $value => $text) {
@@ -592,9 +611,9 @@ class registryBackend {
 				'value'			=> $value,
 				'text'			=> $text,
 				'selected'	=> ($file[dbKITregistryFiles::field_protect] == $value) ? 1 : 0
-			); 
+			);
 		}
-		
+
 		// Content Groups
 		$content_groups = explode(',', $file[dbKITregistryFiles::field_content_groups]);
 		$SQL = sprintf( "SELECT * FROM %s WHERE %s='%s'",
@@ -618,8 +637,8 @@ class registryBackend {
 				'selected'	=> (in_array($group[dbKITregistryGroups::field_group_id], $content_groups)) ? 1 : 0
 			);
 		}
-		
-		
+
+
 		$items = array(
 			array(
 				'label'		=> reg_label_id,
@@ -730,18 +749,18 @@ class registryBackend {
 			'items'							=> $items,
 			'btn_ok'						=> reg_btn_ok,
 			'btn_abort'					=> reg_btn_abort,
-			'abort_location'		=> $this->page_link				
+			'abort_location'		=> $this->page_link
 		);
 		return $this->getTemplate('backend.registry.edit.htt', $data);
 	} // dlgEdit()
-	
+
 	public function checkEdit() {
 		global $dbKITregistryFiles;
 		global $dbKITregistryCfg;
-		
+
 		$message = '';
 		$id = isset($_REQUEST[dbKITregistryFiles::field_id]) ? $_REQUEST[dbKITregistryFiles::field_id] : -1;
-		
+
 		if ($id > 0) {
 			// existierender Datensatz
 			$where = array(dbKITregistryFiles::field_id => $id);
@@ -761,8 +780,8 @@ class registryBackend {
 			$file[dbKITregistryFiles::field_filemtime] = -1;
 			$file[dbKITregistryFiles::field_protect] = dbKITregistryFiles::protect_undefined;
 		}
-		
-		
+
+
 		// Pruefen, ob eine Datei uebertragen wurde...
 		if (isset($_FILES[self::request_file]) && (is_uploaded_file($_FILES[self::request_file]['tmp_name']))) {
 			if ($_FILES[self::request_file]['error'] == UPLOAD_ERR_OK) {
@@ -786,12 +805,12 @@ class registryBackend {
           	return false;
           }
           $message .= sprintf(reg_msg_mkdir, '/'.$sub_dir);
-        }  	
+        }
 				$file_registry = page_filename($_FILES[self::request_file]['name']);
 				$upl_file = $this->registry_path.$sub_dir.'/'.$file_registry;
 				if (!move_uploaded_file($tmp_file, $upl_file)) {
 					// error moving file
-					$this->setError(sprintf(reg_error_upload_move_file, $upl_file)); 
+					$this->setError(sprintf(reg_error_upload_move_file, $upl_file));
 					return false;
 				}
 				// Upload erfolgreich
@@ -808,7 +827,7 @@ class registryBackend {
         $file[dbKITregistryFiles::field_filesize]						= filesize($upl_file);
         $file[dbKITregistryFiles::field_filetype]						= $ext;
         $file[dbKITregistryFiles::field_status]							= dbKITregistryFiles::status_active;
-        $file[dbKITregistryFiles::field_sub_dir]						= $sub_dir;          	
+        $file[dbKITregistryFiles::field_sub_dir]						= $sub_dir;
 			}
 			else {
 				switch ($_FILES[self::request_file]['error']):
@@ -826,9 +845,9 @@ class registryBackend {
 				endswitch;
 				$this->setError($error);
 				return false;
-			}	
+			}
 		}
-		
+
 		foreach ($file as $key => $value) {
 			switch ($key):
 			case dbKITregistryFiles::field_description:
@@ -859,14 +878,14 @@ class registryBackend {
 				continue;
 			endswitch;
 		}
-		
+
 		// Mindestanforderungen pruefen
 		if (empty($file[dbKITregistryFiles::field_filepath_registry])) {
 			$message .= reg_msg_registry_incomplete;
 			$this->setMessage($message);
 			return $this->dlgEdit();
 		}
-		
+
 		if ($id > 0) {
 			// Datensatz aktualisieren
 			$where = array(dbKITregistryFiles::field_id => $id);
@@ -884,7 +903,7 @@ class registryBackend {
 			}
 			$message .= sprintf(reg_msg_registry_inserted, $file[dbKITregistryFiles::field_filename_registry]);
 		}
-		
+
 		foreach ($dbKITregistryFiles->getFields() as $key => $value) {
 			unset($_REQUEST[$key]);
 		}
@@ -893,10 +912,10 @@ class registryBackend {
 		$this->setMessage($message);
 		return $this->dlgEdit();
 	} // checkEdit()
-  
+
 	public function dlgGroups() {
 		global $dbKITregistryGroups;
-		
+
 		$id = isset($_REQUEST[dbKITregistryGroups::field_id]) ? $_REQUEST[dbKITregistryGroups::field_id] : -1;
 		if ($id > 0) {
 			// existierender Datensatz
@@ -951,16 +970,16 @@ class registryBackend {
 				'label'		=> reg_label_status,
 				'name'		=> dbKITregistryGroups::field_status,
 				'value'		=> $status,
-				'hint'		=> reg_hint_status )			
+				'hint'		=> reg_hint_status )
 		);
-		
+
 		$header = array(
 			'id'					=> reg_th_id,
 			'group_id'		=> reg_th_group_id,
 			'group_name'	=> reg_th_group_name,
 			'status'			=> reg_th_status
 		);
-		
+
 		$SQL = sprintf( "SELECT * FROM %s WHERE %s!='%s' ORDER BY %s",
 										$dbKITregistryGroups->getTableName(),
 										dbKITregistryGroups::field_status,
@@ -984,7 +1003,7 @@ class registryBackend {
 			'head'						=> reg_header_groups,
 			'header'					=> $header,
 			'intro'						=> ($this->isMessage()) ? $this->getMessage() : reg_intro_groups,
-			'is_message'			=> ($this->isMessage()) ? 1 : 0, 
+			'is_message'			=> ($this->isMessage()) ? 1 : 0,
 			'form_action'			=> $this->page_link,
 			'action_name'			=> self::request_action,
 			'action_value'		=> self::action_group_check,
@@ -998,10 +1017,10 @@ class registryBackend {
 		);
 		return $this->getTemplate('backend.group.list.htt', $data);
 	} // dlgGroups()
-	
+
 	public function checkGroupEdit() {
 		global $dbKITregistryGroups;
-		
+
 		$id = (isset($_REQUEST[dbKITregistryGroups::field_id])) ? $_REQUEST[dbKITregistryGroups::field_id] : -1;
 		$group_id = (isset($_REQUEST[dbKITregistryGroups::field_group_id])) ? $_REQUEST[dbKITregistryGroups::field_group_id] : '';
 		$group_id = page_filename($group_id);
@@ -1009,7 +1028,7 @@ class registryBackend {
 			$this->setMessage(reg_msg_group_id_invalid);
 			return $this->dlgGroups();
 		}
-		
+
 		if ($id > 0) {
 			$where = array(dbKITregistryGroups::field_id => $id);
 			$group = array();
@@ -1106,7 +1125,7 @@ class registryBackend {
 			return $this->dlgGroups();
 		}
 	} // checkGroupEdit();
-	
+
 } // class registryBackend
 
 ?>

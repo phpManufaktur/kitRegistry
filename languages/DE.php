@@ -1,27 +1,40 @@
 <?php
+
 /**
  * kitRegistry
- * 
- * @author Ralf Hertsch (ralf.hertsch@phpmanufaktur.de)
+ *
+ * @author Ralf Hertsch <ralf.hertsch@phpmanufaktur.de>
  * @link http://phpmanufaktur.de
- * @copyright 2011
- * @license GNU GPL (http://www.gnu.org/licenses/gpl.html)
- * @version $Id$
- * 
- * 	IMPORTANT NOTE:
- * 
- * If you are editing this file or creating a new language file
- * you must ensure that you SAVE THIS FILE UTF-8 ENCODED.
- * Otherwise all special chars will be destroyed and displayed improper!
- * 
- * It is NOT NECESSARY to mask special chars as HTML entities!
- * 
- * Translated to German (Original Source) by Ralf Hertsch
- *   
-**/
+ * @copyright 2011 - 2012
+ * @license MIT License (MIT) http://www.opensource.org/licenses/MIT
+ */
 
-// prevent this file from being accessed directly
-if (!defined('WB_PATH')) die('invalid call of '.$_SERVER['SCRIPT_NAME']);
+// include class.secure.php to protect this file and the whole CMS!
+if (defined('WB_PATH')) {
+  if (defined('LEPTON_VERSION'))
+    include(WB_PATH.'/framework/class.secure.php');
+}
+else {
+  $oneback = "../";
+  $root = $oneback;
+  $level = 1;
+  while (($level < 10) && (!file_exists($root.'/framework/class.secure.php'))) {
+    $root .= $oneback;
+    $level += 1;
+  }
+  if (file_exists($root.'/framework/class.secure.php')) {
+    include($root.'/framework/class.secure.php');
+  }
+  else {
+    trigger_error(sprintf("[ <b>%s</b> ] Can't include class.secure.php!", $_SERVER['SCRIPT_NAME']), E_USER_ERROR);
+  }
+}
+// end include class.secure.php
+
+if ('á' != "\xc3\xa1") {
+  // important: language files must be saved as UTF-8 (without BOM)
+  trigger_error('The language file <b>'.basename(__FILE__).'</b> is damaged, it must be saved <b>UTF-8</b> encoded!', E_USER_ERROR);
+}
 
 // Deutsche Modulbeschreibung
 $module_description 	= 'kitRegistry - Dokumentenablage für KeepInTouch (KIT)';
@@ -35,7 +48,7 @@ define('reg_btn_replicate',										'Starten');
 define('reg_btn_account',											'Konto');
 define('reg_btn_logout',											'Abmelden');
 
-define('reg_cfg_currency',										'%s €'); 
+define('reg_cfg_currency',										'%s €');
 define('reg_cfg_date_separator',							'.');
 define('reg_cfg_date_str',										'd.m.Y');
 define('reg_cfg_datetime_str',								'd.m.Y H:i');
@@ -44,7 +57,7 @@ define('reg_cfg_decimal_separator',          	',');
 define('reg_cfg_month_names',									"Januar,Februar,März,April,Mai,Juni,Juli,August,September,Oktober,November,Dezember");
 define('reg_cfg_thousand_separator',					'.');
 define('reg_cfg_time_long_str',								'H:i:s');
-define('reg_cfg_time_str',										'H:i'); 
+define('reg_cfg_time_str',										'H:i');
 define('reg_cfg_time_zone',										'Europe/Berlin');
 
 define('reg_content_login_wb',								'<p>Damit Sie auf die Dateien in diesem Verzeichnis zugreifen können, müssen Sie sich zunächst <a href="%s">mit Ihrem Benutzernamen und Ihrem Passwort anmelden</a>.</p><p>Nach der Anmeldung werden Sie automatisch wieder hierher geleitet.</p>');
@@ -108,7 +121,7 @@ define('reg_hint_registry_file_keywords',			'Schlüsselwörter bzw. -Begriffe - 
 define('reg_hint_registry_file_description',	'Kurze Beschreibung des Inhaltes der Datei - die Beschreibung wird bei der Dokumentensuche berücksichtigt.');
 define('reg_hint_registry_protect_groups',		'Führen Sie die entsprechende(n) Gruppe(n) auf, die dem Dokumentenschutz Typ zugeordnet werden.');
 define('reg_hint_registry_protect_type',			'Legen Sie fest, ob und wenn ja in welcher Form dieses Dokument vor einem Zugriff geschützt wird.');
-define('reg_hint_status',											''); 
+define('reg_hint_status',											'');
 
 define('reg_intro_cfg',												'<p>Bearbeiten Sie die Einstellungen für <b>kitRegistry</b>.</p>');
 define('reg_intro_groups',										'<p>Mit diesem Dialog können Sie die Gruppen für <b>kitRegistry</b> erstellen und bearbeiten.</p><p>Um einen neuen Eintrag zu erstellen, geben Sie unten die Angaben für die Gruppe ein. Um eine bestehende Gruppe zu bearbeiten, wählen Sie diese in der Liste aus.</p>');
@@ -138,7 +151,7 @@ define('reg_label_id',												'ID');
 define('reg_label_keywords',									'Schlüsselwörter');
 define('reg_label_protect_groups',						'Dokumentenschutz, Gruppe(n)');
 define('reg_label_protect_type',							'Dokumentenschutz, Typ');
-define('reg_label_status',										'Status'); 
+define('reg_label_status',										'Status');
 
 define('reg_msg_access_denied',								'<p>Sie sind nicht berechtigt auf diese Daten zuzugreifen.</p>');
 define('reg_msg_cfg_id_updated',							'<p>Der Konfigurationsdatensatz mit dem Bezeichner <b>%s</b> wurde aktualisiert.</p>');
@@ -172,7 +185,7 @@ define('reg_protect_kit_dist',								'KeepInTouch (KIT) - Verteiler');
 define('reg_protect_kit_intern',							'KeepInTouch (KIT) - Intern');
 define('reg_protect_kit_news',								'KeepInTouch (KIT) - Newsletter');
 define('reg_protect_wb_group',								'WebsiteBaker - Gruppe(n)');
- 
+
 define('reg_status_active',										'Aktiv');
 define('reg_status_deleted',									'Gelöscht');
 define('reg_status_locked',										'Gesperrt');

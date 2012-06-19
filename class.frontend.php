@@ -1,32 +1,51 @@
 <?php
+
 /**
  * kitRegistry
- * 
- * @author Ralf Hertsch (ralf.hertsch@phpmanufaktur.de)
+ *
+ * @author Ralf Hertsch <ralf.hertsch@phpmanufaktur.de>
  * @link http://phpmanufaktur.de
- * @copyright 2011
- * @license GNU GPL (http://www.gnu.org/licenses/gpl.html)
- * @version $Id$
+ * @copyright 2011 - 2012
+ * @license MIT License (MIT) http://www.opensource.org/licenses/MIT
  */
 
-// prevent this file from being accessed directly
-if (!defined('WB_PATH')) die('invalid call of '.$_SERVER['SCRIPT_NAME']);
+// include class.secure.php to protect this file and the whole CMS!
+if (defined('WB_PATH')) {
+  if (defined('LEPTON_VERSION'))
+    include(WB_PATH.'/framework/class.secure.php');
+}
+else {
+  $oneback = "../";
+  $root = $oneback;
+  $level = 1;
+  while (($level < 10) && (!file_exists($root.'/framework/class.secure.php'))) {
+    $root .= $oneback;
+    $level += 1;
+  }
+  if (file_exists($root.'/framework/class.secure.php')) {
+    include($root.'/framework/class.secure.php');
+  }
+  else {
+    trigger_error(sprintf("[ <b>%s</b> ] Can't include class.secure.php!", $_SERVER['SCRIPT_NAME']), E_USER_ERROR);
+  }
+}
+// end include class.secure.php
 
 require_once(WB_PATH.'/modules/'.basename(dirname(__FILE__)).'/initialize.php');
 
 class kitRegistry {
-	
+
 	const request_action					= 'ract';
 	const request_file						= 'file';
 	const request_search					= 'sear';
-	
+
 	const action_account					= 'acc';
 	const action_default					= 'def';
 	const action_login						= 'log';
 	const action_logout						= 'out';
 	const action_search						= 'sea';
 	const action_search_check			= 'sec';
-	
+
 	const session_prefix		= 'kdl_';
 	const session_protect		= 'pct';		// protected access?
 	const session_user			= 'usr';		// username
@@ -35,13 +54,13 @@ class kitRegistry {
 	const session_admin			= 'adm';
 	const session_temp_act	= 'tact';
 	const session_temp_file = 'tfil';
-	
+
 	const protect_none			= 'nn';
 	const protect_undefined	= 'udf';
 	const protect_group			= 'grp';
 	const protect_kit				= 'kit';
 	const protect_wb				= 'wb';
-	
+
 	const param_kit_auto		= 'kit_auto';
 	const param_kit_intern	= 'kit_intern';
 	const param_kit_news		= 'kit_news';
@@ -49,7 +68,7 @@ class kitRegistry {
 	const param_wb_group		= 'wb_group';
 	const param_wb_auto			= 'wb_auto';
 	const param_preset				= 'preset';
-	
+
 	private $params = array(
 		self::param_kit_intern	=> '',
 		self::param_kit_news		=> '',
@@ -57,22 +76,24 @@ class kitRegistry {
 		self::param_wb_group		=> '',
 		self::param_preset			=> 1
 	);
-	
+
 	const registry_anchor		= 'regan';
-	
+
 	private $template_path	= '';
 	private $kit_installed	= false;
-	private $is_authenticated = false; 
+	private $is_authenticated = false;
 	private $wb_login = false;
 	private $silent = true;
 	private $download_link = '';
 	private $page_link = '';
-	
+	private $error = '';
+	private $message = '';
+
 	public function __construct($silent=true) {
 		global $registryTools;
 		$this->silent = $silent;
 		//$this->template_path = WB_PATH.'/modules/'.basename(dirname(__FILE__)).'/htt/';
-		$this->template_path = WB_PATH.'/modules/'.basename(dirname(__FILE__)).'/htt/'.$this->params[self::param_preset].'/'.KIT_REGISTRY_LANGUAGE.'/'; 	
+		$this->template_path = WB_PATH.'/modules/'.basename(dirname(__FILE__)).'/htt/'.$this->params[self::param_preset].'/'.KIT_REGISTRY_LANGUAGE.'/';
 		$this->kit_installed = (file_exists(WB_PATH.'/modules/kit/class.contact.php')) ? true : false;
 		// check if $_SESSIONs are already defined - protect access by default!
 		if (!isset($_SESSION[self::session_prefix.self::session_protect])) $_SESSION[self::session_prefix.self::session_protect] = self::protect_undefined;
@@ -83,15 +104,15 @@ class kitRegistry {
 		$this->wb_login = (defined('LOGIN_URL')) ? true : false;
 		$url = '';
 		$registryTools->getPageLinkByPageID(PAGE_ID, $url);
-		$this->page_link = $url;  	
+		$this->page_link = $url;
 		unset($_SESSION['KIT_EXTENSION']);
 		$this->download_link = WB_URL.'/modules/kit_registry/rdl.php';
 	} // __construct()
-	
+
 	public function getParams() {
 		return $this->params;
 	} // getParams()
-	
+
 	public function setParams($params=array()) {
 		// set default values
 		foreach ($this->params as $key => $value) {
@@ -141,15 +162,15 @@ class kitRegistry {
 					$this->params[$key] = implode(',', $para);
 					break;
 				endswitch;
-			}	
+			}
 			else {
 				$this->setError(sprintf(reg_error_unknown_param_key, $key));
 				return false;
-			}		
+			}
 		}
 		return true;
 	} // setParams()
-	
+
 	/**
    * Return Version of Module
    *
@@ -159,7 +180,7 @@ class kitRegistry {
     // read info.php into array
     $info_text = file(WB_PATH.'/modules/'.basename(dirname(__FILE__)).'/info.php');
     if ($info_text == false) {
-      return -1; 
+      return -1;
     }
     // walk through array
     foreach ($info_text as $item) {
@@ -168,17 +189,17 @@ class kitRegistry {
         $value = explode('=', $item);
         // return floatval
         return floatval(preg_replace('([\'";,\(\)[:space:][:alpha:]])', '', $value[1]));
-      } 
+      }
     }
     return -1;
   } // getVersion()
-	
+
 	/**
     * Set $this->error to $error
-    * 
+    *
     * @param STR $error
     */
-  public function setError($error, $line=-1) { 
+  public function setError($error, $line=-1) {
   	$debug = debug_backtrace();
   	$caller = next($debug);
   	$this->error = sprintf('[%s::%s - %s] %s', basename($caller['file']), $caller['function'], ($line > 0) ? $line : $caller['line'], $error);
@@ -186,7 +207,7 @@ class kitRegistry {
 
   /**
     * Get Error from $this->error;
-    * 
+    *
     * @return STR $this->error
     */
   public function getError() {
@@ -195,15 +216,15 @@ class kitRegistry {
 
   /**
     * Check if $this->error is empty
-    * 
+    *
     * @return BOOL
     */
   public function isError() {
     return (bool) !empty($this->error);
   } // isError
-  
+
   /** Set $this->message to $message
-    * 
+    *
     * @param STR $message
     */
   public function setMessage($message) {
@@ -212,7 +233,7 @@ class kitRegistry {
 
   /**
     * Get Message from $this->message;
-    * 
+    *
     * @return STR $this->message
     */
   public function getMessage() {
@@ -221,27 +242,27 @@ class kitRegistry {
 
   /**
     * Check if $this->message is empty
-    * 
+    *
     * @return BOOL
     */
   public function isMessage() {
     return (bool) !empty($this->message);
   } // isMessage
-  
+
   public function getTemplate($template, $template_data) {
   	global $parser;
   	try {
-  		$result = $parser->get($this->template_path.$template, $template_data); 
+  		$result = $parser->get($this->template_path.$template, $template_data);
   	} catch (Exception $e) {
   		$this->setError(sprintf(reg_error_template_error, $template, $e->getMessage()));
   		return false;
   	}
   	return $result;
   } // getTemplate()
-  
+
 	/**
    * Prevents XSS Cross Site Scripting
-   * 
+   *
    * @param REFERENCE $_REQUEST Array
    * @return $request
    */
@@ -254,14 +275,14 @@ class kitRegistry {
   	}
 	  return $request;
   } // xssPrevent()
-	
+
   /**
    * Action handler of class kitDirList
    */
 	public function action() {
 		// check if there are errors...
 		if ($this->isError()) return $this->show();
-		
+
 		// get params to $_SESSION...
 		foreach ($this->params as $key => $value) {
 			if (!isset($_SESSION[self::session_prefix.$key]) || ($_SESSION[self::session_prefix.$key] !== $value)) $_SESSION[self::session_prefix.$key] = $value;
@@ -302,13 +323,13 @@ class kitRegistry {
 			$result = $this->checkSearch();
 			break;
 		case self::action_search:
-		default: 
-			$result = $this->showSearchDlg();	
-		endswitch;		
-		
+		default:
+			$result = $this->showSearchDlg();
+		endswitch;
+
 		return $this->show($result, $account);
 	} // action()
-	
+
 	/**
 	 * ECHO or RETURN the result dialog depending on switch SILENT
 	 * @param STR $result
@@ -316,10 +337,10 @@ class kitRegistry {
 	public function show($result='- no content -', $account=false) {
 		// check if there was an error...
 		if ($this->isError()) $result = sprintf('<div class="registry_error"><h1>%s</h1>%s</div>', reg_header_error, $this->getError());
-		if (!$account && 
-				//(isset($_SESSION[self::session_prefix.self::session_auth]) && ($_SESSION[self::session_prefix.self::session_auth] == 1)) && 
+		if (!$account &&
+				//(isset($_SESSION[self::session_prefix.self::session_auth]) && ($_SESSION[self::session_prefix.self::session_auth] == 1)) &&
 				isset($_SESSION[self::session_prefix.self::session_protect]) &&
-				($_SESSION[self::session_prefix.self::session_protect] == self::protect_kit)) { 
+				($_SESSION[self::session_prefix.self::session_protect] == self::protect_kit)) {
 			// display logout link if necessary...
 			$result = sprintf('<a name="%s"></a><div class="registry_body"><div class="registry_logout"><a href="%s">%s</a> &bull; <a href="%s">%s</a></div>%s</div>',
 												self::registry_anchor,
@@ -327,10 +348,10 @@ class kitRegistry {
 												reg_btn_account,
 												sprintf('%s?%s=%s', $this->page_link, self::request_action, self::action_logout),
 												reg_btn_logout,
-												$result); 		
+												$result);
 		}
-		elseif (//(isset($_SESSION[self::session_prefix.self::session_auth]) && ($_SESSION[self::session_prefix.self::session_auth] == 1)) && 
-						isset($_SESSION[self::session_prefix.self::session_protect]) && 
+		elseif (//(isset($_SESSION[self::session_prefix.self::session_auth]) && ($_SESSION[self::session_prefix.self::session_auth] == 1)) &&
+						isset($_SESSION[self::session_prefix.self::session_protect]) &&
 						(($_SESSION[self::session_prefix.self::session_protect] == self::protect_wb) ||
 						 ($_SESSION[self::session_prefix.self::session_protect] == self::protect_group))) {
 			// display logout link if necessary...
@@ -343,12 +364,12 @@ class kitRegistry {
 		else {
 			$result = sprintf('<a name="%s"></a><div class="kdl_body">%s</div>', self::registry_anchor, $result);
 		}
-		
+
 		if ($this->silent) return $result;
 		echo $result;
 	} // show()
-	
-	public function logout() {		
+
+	public function logout() {
 		// unset all session vars...
 		unset($_SESSION[self::session_prefix.self::session_user]);
 		unset($_SESSION[self::session_prefix.self::session_auth]);
@@ -366,12 +387,12 @@ class kitRegistry {
 		elseif ($_SESSION[self::session_prefix.self::session_protect] == self::protect_kit) {
 			// KeepInTouch Logout
 			unset($_SESSION[self::session_prefix.self::session_protect]);
-			return $this->dlgKITaccount('out');			
+			return $this->dlgKITaccount('out');
 		}
 		// otherwise only unset the protected session...
 		unset($_SESSION[self::session_prefix.self::session_protect]);
 	} // logout()
-	
+
 	/**
 	 * Art des Schutzes pruefen und festlegen
 	 */
@@ -383,7 +404,7 @@ class kitRegistry {
 			if (!$this->kit_installed) {
 				$this->setError(reg_error_kit_not_installed);
 				return false;
-			}		
+			}
 			// KIT einbinden
 			require_once(WB_PATH.'/modules/kit/initialize.php');
 			$dbContactArray = new dbKITcontactArrayCfg();
@@ -420,7 +441,7 @@ class kitRegistry {
 					return false;
 				}
 			}
-			$_SESSION[self::session_prefix.self::session_protect] = self::protect_kit;		
+			$_SESSION[self::session_prefix.self::session_protect] = self::protect_kit;
 		}
 		elseif (!empty($_SESSION[self::session_prefix.self::param_wb_group])) {
 			if (!$this->wb_login) {
@@ -443,7 +464,7 @@ class kitRegistry {
 					return false;
 				}
 				$wb_groups_id[] = $data['group_id'];
-			}			
+			}
 			$_SESSION[self::session_prefix.self::session_protect] = self::protect_group;
 			$_SESSION[self::session_prefix.self::session_wb_grps] = implode(',', $wb_groups_id);
 		}
@@ -461,7 +482,7 @@ class kitRegistry {
 			if (!$this->kit_installed) {
 				$this->setError(reg_error_kit_not_installed);
 				return false;
-			}		
+			}
 			$_SESSION[self::session_prefix.self::session_protect] = self::protect_kit;
 		}
 		else {
@@ -470,7 +491,7 @@ class kitRegistry {
 		}
 		return true;
 	} // checkProtection()
-	
+
 	/**
 	 * Check the authentication by the desired access method.
 	 * Set the different $_SESSION vars for further checks and controls
@@ -479,20 +500,20 @@ class kitRegistry {
 	private function checkAuthentication() {
 		global $registryTools;
 		global $wb;
-		
+
 		if ($_SESSION[self::session_prefix.self::session_protect] == self::protect_none) {
 			// no protection needed
 			$_SESSION[self::session_prefix.self::session_auth] = 0;
 			$this->is_authenticated = true;
 			return true;
 		}
-		elseif ($_SESSION[self::session_prefix.self::session_protect] == self::protect_kit) { 
+		elseif ($_SESSION[self::session_prefix.self::session_protect] == self::protect_kit) {
 			// Protection by KeepInTouch login
 			if (!$this->kit_installed) {
 				$this->setError(reg_error_kit_not_installed, __LINE__);
 				return $this->getError();
 			}
-			if (isset($_SESSION['kit_aid']) && isset($_SESSION['kit_key'])) { 
+			if (isset($_SESSION['kit_aid']) && isset($_SESSION['kit_key'])) {
 				// KIT User ist bereits angemeldet
 				require_once(WB_PATH.'/modules/kit/initialize.php');
 				global $dbContact;
@@ -505,7 +526,7 @@ class kitRegistry {
 				if (!$dbRegister->sqlSelectRecord($where, $register)) {
 					$this->setError($dbRegister->getError());
 					return $this->getError();
-				}				
+				}
 				if (count($register) < 1) {
 					$this->setError(sprintf(reg_error_kit_register_id_missing, $_SESSION['kit_aid']));
 					return $this->getError();
@@ -523,7 +544,7 @@ class kitRegistry {
 					$this->setError(sprintf(reg_error_kit_id_missing, $register[0][dbKITregister::field_contact_id]));
 					return $this->getError();
 				}
-				
+
 				// Kategorien des Users nur pruefen, wenn kit_auto NICHT aktiv ist
 				$kg = $contact[dbKITcontact::field_category];
 				if (!empty($contact[dbKITcontact::field_distribution])) {
@@ -535,8 +556,8 @@ class kitRegistry {
 					$kg .= $contact[dbKITcontact::field_newsletter];
 				}
 				$kit_groups = explode(',', $kg);
-				
-				$grps = $_SESSION[self::session_prefix.self::param_kit_dist]; 
+
+				$grps = $_SESSION[self::session_prefix.self::param_kit_dist];
 				if (!empty($_SESSION[self::session_prefix.self::param_kit_intern])) {
 					if (!empty($grps)) $grps .= ',';
 					$grps .= $_SESSION[self::session_prefix.self::param_kit_intern];
@@ -564,18 +585,18 @@ class kitRegistry {
 				// Benutzer freigeben
 				$_SESSION[self::session_prefix.self::session_auth] = 1;
 				$this->is_authenticated = true;
-				
+
 				// check if user is admin...
 				$admin_emails = array();
-				if ($dbRegister->getAdmins($admin_emails) && (in_array($_SESSION[self::session_prefix.self::session_user], $admin_emails))) { 
+				if ($dbRegister->getAdmins($admin_emails) && (in_array($_SESSION[self::session_prefix.self::session_user], $admin_emails))) {
 					$_SESSION[self::session_prefix.self::session_admin] = true;
-				} 
+				}
 				return true;
 			}
 			else {
 				// KIT User ist nicht angemeldet
 				return $this->dlgKITaccount();
-			}			
+			}
 		}
 		elseif ($_SESSION[self::session_prefix.self::session_protect] == self::protect_group) {
 			// Protection by WB Group
@@ -655,7 +676,7 @@ class kitRegistry {
 			return $this->getError();
 		}
 	} // checkAuthentication()
-	
+
 	public function dlgKITaccount($action='') {
 		global $dbCfg; // KIT config
 		global $dbDialogsRegister;
@@ -669,7 +690,7 @@ class kitRegistry {
 		// get the KIT Account dialog which should be used
   	$dialog_account = $dbCfg->getValue(dbKITcfg::cfgRegisterDlgACC);
   	$where = array(dbKITdialogsRegister::field_name => $dialog_account);
-  	$regDialogs = array(); 
+  	$regDialogs = array();
   	if (!$dbDialogsRegister->sqlSelectRecord($where, $regDialogs)) {
   		$this->setError($dbDialogsRegister->getError());
   		return $this->getError();
@@ -680,14 +701,14 @@ class kitRegistry {
   	}
 		if (file_exists(WB_PATH.'/modules/kit/dialogs/'.strtolower($dialog_account).'/'.strtolower($dialog_account).'.php')) {
   		require_once(WB_PATH.'/modules/kit/dialogs/'.strtolower($dialog_account).'/'.strtolower($dialog_account).'.php');
-  		// call Account Dialog				
+  		// call Account Dialog
   		unset($_SESSION['KIT_REDIRECT']);
   		$_SESSION['KIT_EXTENSION'] = array('link' => $this->page_link, 'name' => MENU_TITLE);
 			$callDialog = new $dialog_account(true);
 			$callDialog->setDlgID($regDialogs[0][dbKITdialogsRegister::field_id]);
 			if (!empty($action)) $_REQUEST['acc_act'] = $action;
 			$result = $callDialog->action();
-			$url = '';				
+			$url = '';
 			$registryTools->getPageLinkByPageID(PAGE_ID, $url);
 			$_SESSION['KIT_REDIRECT'] = $url;
 			return $result;
@@ -695,10 +716,10 @@ class kitRegistry {
 		else {
 			$this->setError(sprintf(kit_error_dlg_missing, $dialog));
 			return $this->getError();
-		}  		
+		}
 	} // dlgKITaccount()
-	
-	
+
+
 	public function showSearchDlg() {
 		global $registryTools;
 		$results = '';
@@ -712,24 +733,24 @@ class kitRegistry {
 			'search_name'		=> self::request_search,
 			'btn_ok'				=> reg_btn_ok,
 		);
-		return $this->getTemplate('frontend.search.htt', $data);	
+		return $this->getTemplate('frontend.search.htt', $data);
 	} // showSearchDlg()
-	
+
 	public function checkSearch() {
 		global $dbKITregistryFiles;
 		global $registryTools;
 		if (!isset($_REQUEST[self::request_search]) || empty($_REQUEST[self::request_search])) {
 			$this->setMessage(reg_msg_search_empty);
 			return $this->showSearchDlg();
-		}	
+		}
 		$search = $_REQUEST[self::request_search];
-		$SQL = sprintf( 'SELECT * FROM %1$s WHERE %2$s=\'%3$s\' AND 
-										((%4$s LIKE \'%5$s%%\' OR %4$s LIKE \'%%%5$s%%\' OR %4$s LIKE \'%%%5$s\') OR 
+		$SQL = sprintf( 'SELECT * FROM %1$s WHERE %2$s=\'%3$s\' AND
+										((%4$s LIKE \'%5$s%%\' OR %4$s LIKE \'%%%5$s%%\' OR %4$s LIKE \'%%%5$s\') OR
 										 (%6$s LIKE \'%5$s%%\' OR %6$s LIKE \'%%%5$s%%\' OR %6$s LIKE \'%%%5$s\') OR
 										 (%7$s LIKE \'%5$s%%\' OR %7$s LIKE \'%%%5$s%%\' OR %7$s LIKE \'%%%5$s\') OR
 										 (%8$s LIKE \'%5$s%%\' OR %8$s LIKE \'%%%5$s%%\' OR %8$s LIKE \'%%%5$s\') OR
 										 (%9$s LIKE \'%5$s%%\' OR %9$s LIKE \'%%%5$s%%\' OR %9$s LIKE \'%%%5$s\'))',
-										$dbKITregistryFiles->getTableName(), 
+										$dbKITregistryFiles->getTableName(),
 										dbKITregistryFiles::field_status,
 										dbKITregistryFiles::status_active,
 										dbKITregistryFiles::field_filename_original,
@@ -826,9 +847,9 @@ class kitRegistry {
 		);
 		return $this->getTemplate('frontend.search.hits.htt', $data);
 	} // checkSearch()
-	
+
 	/**
-	 * Wird direkt von rdl.php aufgerufen, weil eine 
+	 * Wird direkt von rdl.php aufgerufen, weil eine
 	 * Berechtigung erforderlich ist
 	 */
 	public function execLoginDlg() {
@@ -850,21 +871,21 @@ class kitRegistry {
 		switch ($protect):
 		case dbKITregistryFiles::protect_kit_dist:
 			$_SESSION[self::session_prefix.self::param_kit_dist] = $file[dbKITregistryFiles::field_protect_groups];
-			break; 
+			break;
 		case dbKITregistryFiles::protect_kit_intern:
 			$_SESSION[self::session_prefix.self::param_kit_intern] = $file[dbKITregistryFiles::field_protect_groups];
-			break; 
+			break;
 		case dbKITregistryFiles::protect_kit_news:
 			$_SESSION[self::session_prefix.self::param_kit_news] = $file[dbKITregistryFiles::field_protect_groups];
-			break; 
+			break;
 		case dbKITregistryFiles::protect_wb_group:
 			$_SESSION[self::session_prefix.self::param_wb_group] = $file[dbKITregistryFiles::field_protect_groups];
-			break; 
+			break;
 		default:
 			$_SESSION[self::session_prefix.self::session_protect] = self::protect_none;
 		endswitch;
 		$this->checkProtection();
-		
+
 		$_SESSION[self::session_prefix.self::session_temp_act] = self::action_login;
 		$_SESSION[self::session_prefix.self::session_temp_file] = $id;
 		// check authentication and return login if neccessary...
@@ -878,7 +899,7 @@ class kitRegistry {
 		);
   	return $this->getTemplate('frontend.prompt.htt', $data);
 	} // execLoginDlg()
-	
+
 } // class kitRegistry
 
 ?>

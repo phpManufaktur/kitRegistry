@@ -1,5 +1,14 @@
 <?php
 
+/**
+ * kitRegistry
+ *
+ * @author Ralf Hertsch <ralf.hertsch@phpmanufaktur.de>
+ * @link http://phpmanufaktur.de
+ * @copyright 2011 - 2012
+ * @license MIT License (MIT) http://www.opensource.org/licenses/MIT
+ */
+
 // first we need the LEPTON config.php
 require_once('../../config.php');
 

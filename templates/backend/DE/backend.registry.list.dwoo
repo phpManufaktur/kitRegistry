@@ -46,5 +46,5 @@
      <tr><td class="reg_tab_empty" colspan="6">{$msg_tab_empty}</td></tr>
      {/if}
   </table>
-  {include('backend.registry.replicate.htt')}
+  {include('backend.registry.replicate.dwoo')}
 </div>

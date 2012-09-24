@@ -31,5 +31,5 @@
     </tr>
     {/foreach}
   </table>
-  {include('backend.group.edit.htt')}
+  {include('backend.group.edit.dwoo')}
 </div>

@@ -93,7 +93,7 @@ class kitRegistry {
 		global $registryTools;
 		$this->silent = $silent;
 		//$this->template_path = WB_PATH.'/modules/'.basename(dirname(__FILE__)).'/htt/';
-		$this->template_path = WB_PATH.'/modules/'.basename(dirname(__FILE__)).'/htt/'.$this->params[self::param_preset].'/'.KIT_REGISTRY_LANGUAGE.'/';
+		$this->template_path = WB_PATH.'/modules/'.basename(dirname(__FILE__)).'/templates/frontend/'.$this->params[self::param_preset].'/'.KIT_REGISTRY_LANGUAGE.'/';
 		$this->kit_installed = (file_exists(WB_PATH.'/modules/kit/class.contact.php')) ? true : false;
 		// check if $_SESSIONs are already defined - protect access by default!
 		if (!isset($_SESSION[self::session_prefix.self::session_protect])) $_SESSION[self::session_prefix.self::session_protect] = self::protect_undefined;
@@ -135,7 +135,7 @@ class kitRegistry {
 				switch ($key):
 				case self:: param_preset:
 					$this->params[$key] = $value;
-					$this->template_path = WB_PATH.'/modules/'.basename(dirname(__FILE__)).'/htt/'.$this->params[self::param_preset].'/'.KIT_REGISTRY_LANGUAGE.'/';
+					$this->template_path = WB_PATH.'/modules/'.basename(dirname(__FILE__)).'/templates/frontend/'.$this->params[self::param_preset].'/'.KIT_REGISTRY_LANGUAGE.'/';
 					break;
 				case self::param_kit_intern:
 				case self::param_kit_news:
@@ -580,7 +580,7 @@ class kitRegistry {
 						'header'		=> reg_header_access_denied,
 						'content'		=> reg_msg_access_denied
 					);
-					return $this->getTemplate('frontend.prompt.htt', $data);
+					return $this->getTemplate('frontend.prompt.dwoo', $data);
 				}
 				// Benutzer freigeben
 				$_SESSION[self::session_prefix.self::session_auth] = 1;
@@ -609,7 +609,7 @@ class kitRegistry {
 					'content'		=> sprintf(reg_content_login_wb, LOGIN_URL.'?redirect='.$url)
 				);
 				// Anmeldedialog anzeigen
-				return $this->getTemplate('frontend.prompt.htt', $data);
+				return $this->getTemplate('frontend.prompt.dwoo', $data);
 			}
 			else {
 				// pruefen ob der Anwender berechtigt ist auf die Daten zuzugreifen
@@ -632,7 +632,7 @@ class kitRegistry {
 						'header'		=> reg_header_access_denied,
 						'content'		=> reg_msg_access_denied
 					);
-					return $this->getTemplate('frontend.prompt.htt', $data);
+					return $this->getTemplate('frontend.prompt.dwoo', $data);
 				}
 				$_SESSION[self::session_prefix.self::session_user] = $_SESSION['EMAIL'];
 				$_SESSION[self::session_prefix.self::session_auth] = 1;
@@ -651,7 +651,7 @@ class kitRegistry {
 					'content'		=> sprintf(reg_content_login_wb, LOGIN_URL.'?redirect='.$url)
 				);
 				// Anmeldedialog anzeigen
-				return $this->getTemplate('frontend.prompt.htt', $data);
+				return $this->getTemplate('frontend.prompt.dwoo', $data);
 			}
 			require_once(WB_PATH.'/modules/'.basename(dirname(__FILE__)).'/class.users.php');
 			$dbGroups = new dbWBgroups();
@@ -733,17 +733,25 @@ class kitRegistry {
 			'search_name'		=> self::request_search,
 			'btn_ok'				=> reg_btn_ok,
 		);
-		return $this->getTemplate('frontend.search.htt', $data);
+		return $this->getTemplate('frontend.search.dwoo', $data);
 	} // showSearchDlg()
 
 	public function checkSearch() {
 		global $dbKITregistryFiles;
 		global $registryTools;
+		global $dbKITregistryCfg;
+		
 		if (!isset($_REQUEST[self::request_search]) || empty($_REQUEST[self::request_search])) {
 			$this->setMessage(reg_msg_search_empty);
 			return $this->showSearchDlg();
 		}
-		$search = $_REQUEST[self::request_search];
+	  $search = trim(strip_tags($_REQUEST[self::request_search]));
+		$min_length = $dbKITregistryCfg->getValue(dbKITregistryCfg::cfgMinSearchLength);
+	  if (strlen($search) < $min_length) {
+	  	$this->setMessage(sprintf(reg_msg_search_str_length, $min_length));
+	  	return $this->showSearchDlg();
+	  }	
+		
 		$SQL = sprintf( 'SELECT * FROM %1$s WHERE %2$s=\'%3$s\' AND
 										((%4$s LIKE \'%5$s%%\' OR %4$s LIKE \'%%%5$s%%\' OR %4$s LIKE \'%%%5$s\') OR
 										 (%6$s LIKE \'%5$s%%\' OR %6$s LIKE \'%%%5$s%%\' OR %6$s LIKE \'%%%5$s\') OR
@@ -845,7 +853,7 @@ class kitRegistry {
 			'hits'				=> $items,
 			'go_back'			=> sprintf('%s?%s=%s', $this->page_link, self::request_action, self::action_search)
 		);
-		return $this->getTemplate('frontend.search.hits.htt', $data);
+		return $this->getTemplate('frontend.search.hits.dwoo', $data);
 	} // checkSearch()
 
 	/**
@@ -897,7 +905,7 @@ class kitRegistry {
 			'header'	=> reg_header_download_file,
 			'content'	=> sprintf(reg_msg_download_now, $link, $file[dbKITregistryFiles::field_filename_registry])
 		);
-  	return $this->getTemplate('frontend.prompt.htt', $data);
+  	return $this->getTemplate('frontend.prompt.dwoo', $data);
 	} // execLoginDlg()
 
 } // class kitRegistry

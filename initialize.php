@@ -73,8 +73,20 @@ else {
 	if (!defined('KIT_REGISTRY_LANGUAGE')) define('KIT_REGISTRY_LANGUAGE', LANGUAGE); // die Konstante gibt an in welcher Sprache KIT Registry aktuell arbeitet
 }
 
+if (!class_exists('Dwoo'))
+	require_once WB_PATH.'/modules/dwoo/include.php';
+
+// initialize the template engine
+global $parser;
+if (!is_object($parser)) {
+	$cache_path = WB_PATH.'/temp/cache';
+	if (!file_exists($cache_path)) mkdir($cache_path, 0755, true);
+	$compiled_path = WB_PATH.'/temp/compiled';
+	if (!file_exists($compiled_path)) mkdir($compiled_path, 0755, true);
+	$parser = new Dwoo($compiled_path, $cache_path);
+}
+
 if (!class_exists('dbconnectle')) 				require_once(WB_PATH.'/modules/dbconnect_le/include.php');
-if (!class_exists('Dwoo')) 								require_once(WB_PATH.'/modules/dwoo/include.php');
 if (!class_exists('kitContactInterface')) require_once(WB_PATH.'/modules/kit/class.interface.php');
 
 require_once(WB_PATH.'/modules/'.basename(dirname(__FILE__)).'/class.tools.php');
@@ -86,10 +98,7 @@ global $dbKITregistryCfg;
 global $registryTools;
 global $dbKITregistryGroups;
 
-if (!is_object($parser)) $parser = new Dwoo();
 if (!is_object($dbKITregistryFiles)) $dbKITregistryFiles = new dbKITregistryFiles();
 if (!is_object($dbKITregistryCfg)) $dbKITregistryCfg = new dbKITregistryCfg();
 if (!is_object($registryTools)) $registryTools = new kitRegistryTools();
 if (!is_object($dbKITregistryGroups)) $dbKITregistryGroups = new dbKITregistryGroups();
-
-?>

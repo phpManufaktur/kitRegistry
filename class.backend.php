@@ -62,14 +62,14 @@ class registryBackend {
 
 	private $page_link 					= '';
 	private $img_url						= '';
-	private $template_path			= '';
+	private static $template_path	= '';
 	private $error							= '';
 	private $message						= '';
 	private $registry_path			= '';
 
 	public function __construct() {
 		$this->page_link = ADMIN_URL.'/admintools/tool.php?tool=kit_registry';
-		$this->template_path = WB_PATH . '/modules/' . basename(dirname(__FILE__)) . '/htt/' ;
+		self::$template_path = WB_PATH . '/modules/' . basename(dirname(__FILE__)) . '/templates/backend/' ;
 		$this->img_url = WB_URL. '/modules/'.basename(dirname(__FILE__)).'/images/';
 		date_default_timezone_set(reg_cfg_time_zone);
 		$this->registry_path = WB_PATH.MEDIA_DIRECTORY.'/kit_protected/registry/';
@@ -160,6 +160,7 @@ class registryBackend {
     return -1;
   } // getVersion()
 
+  /*
   public function getTemplate($template, $template_data) {
   	global $parser;
   	try {
@@ -170,7 +171,36 @@ class registryBackend {
   	}
   	return $result;
   } // getTemplate()
-
+  */
+  
+  /**
+   * Get the template, set the data and return the compiled result
+   *
+   * @param string $template the name of the template
+   * @param array $template_data
+   * @param boolean $trigger_error raise a trigger error on problems
+   * @return boolean|Ambigous <string, mixed>
+   */
+  protected function getTemplate($template, $template_data, $trigger_error=false) {
+  	global $parser;
+  	// check if a language depending template exists
+  	$template_path = (file_exists(self::$template_path.LANGUAGE.'/'.$template)) ? self::$template_path.LANGUAGE.'/' : self::$template_path.'DE/';
+  	// check if a custom template exists ...
+  	$load_template = (file_exists($template_path.'custom.'.$template)) ? $template_path.'custom.'.$template : $template_path.$template;
+  	try {
+  		$result = $parser->get($load_template, $template_data);
+  	}
+  	catch (Exception $e) {
+  		$this->setError(sprintf('[%s - %s] %s', __METHOD__, __LINE__,
+  				sprintf(reg_error_template_error, basename($load_template), $e->getMessage())
+  		));
+  		if ($trigger_error)
+  			trigger_error($this->getError(), E_USER_ERROR);
+  		return false;
+  	}
+  	return $result;
+  } // getTemplate()
+  
 
   /**
    * Verhindert XSS Cross Site Scripting
@@ -252,7 +282,7 @@ class registryBackend {
   		'error'				=> ($this->isError()) ? 1 : 0,
   		'content'			=> ($this->isError()) ? $this->getError() : $content
   	);
-  	echo $this->getTemplate('backend.body.htt', $data);
+  	echo $this->getTemplate('backend.body.dwoo', $data);
   } // show()
 
   public function dlgAbout() {
@@ -261,7 +291,7 @@ class registryBackend {
   		'img_url'					=> $this->img_url.'/kit_registry_logo_450_294.jpg',
   		'release_notes'		=> file_get_contents(WB_PATH.'/modules/'.basename(dirname(__FILE__)).'/CHANGELOG'),
   	);
-  	return $this->getTemplate('backend.about.htt', $data);
+  	return $this->getTemplate('backend.about.dwoo', $data);
   } // dlgAbout()
 
   public function dlgRegistryList() {
@@ -325,7 +355,7 @@ class registryBackend {
   		'files'							=> $items,
   		'msg_tab_empty'			=> reg_msg_tab_empty
   	);
-  	return $this->getTemplate('backend.registry.list.htt', $data);
+  	return $this->getTemplate('backend.registry.list.dwoo', $data);
   } // dlgRegistryList()
 
   /**
@@ -501,7 +531,7 @@ class registryBackend {
 			'abort_location'			=> $this->page_link,
 			'header'							=> $header
 		);
-		return $this->getTemplate('backend.config.htt', $data);
+		return $this->getTemplate('backend.config.dwoo', $data);
 	} // dlgConfig()
 
 	/**
@@ -751,7 +781,7 @@ class registryBackend {
 			'btn_abort'					=> reg_btn_abort,
 			'abort_location'		=> $this->page_link
 		);
-		return $this->getTemplate('backend.registry.edit.htt', $data);
+		return $this->getTemplate('backend.registry.edit.dwoo', $data);
 	} // dlgEdit()
 
 	public function checkEdit() {
@@ -1015,7 +1045,7 @@ class registryBackend {
 			'abort_location'	=> $this->page_link,
 			'groups'					=> $groups
 		);
-		return $this->getTemplate('backend.group.list.htt', $data);
+		return $this->getTemplate('backend.group.list.dwoo', $data);
 	} // dlgGroups()
 
 	public function checkGroupEdit() {

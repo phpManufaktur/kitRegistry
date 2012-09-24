@@ -34,7 +34,7 @@ else {
 $module_directory     = 'kit_registry';
 $module_name          = 'kitRegistry';
 $module_function      = 'tool';
-$module_version       = '0.11';
+$module_version       = '0.12';
 $module_status        = 'Beta';
 $module_platform      = '2.8';
 $module_author        = 'Ralf Hertsch, Berlin (Germany)';

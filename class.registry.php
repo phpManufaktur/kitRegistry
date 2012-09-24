@@ -212,12 +212,18 @@ class dbKITregistryCfg extends dbConnectLE {
   const cfgRegistryListTabs		= 'cfgRegistryListTabs';
   const cfgAllowedFileTypes		= 'cfgAllowedFileTypes';
   const cfgRegistryDroplet		= 'cfgRegistryDroplet';
+  const cfgCronjobDir         = 'cfgCronjobDir';
+  const cfgFTPregistryGroup   = 'cfgFTPregistryGroup';
+  const cfgMinSearchLength    = 'cfgMinSearchLength';
 
   public $config_array = array(
   	array('reg_label_cfg_exec', self::cfgRegistryExec, self::type_boolean, '1', 'reg_desc_cfg_exec'),
   	array('reg_label_cfg_list_tabs', self::cfgRegistryListTabs, self::type_array, 'a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,0,1,2,3,4,5,6,7,8,9,#', 'reg_desc_cfg_list_tabs'),
   	array('reg_label_cfg_allowed_files', self::cfgAllowedFileTypes, self::type_array, 'pdf,doc,txt', 'reg_desc_cfg_allowed_files'),
-  	array('reg_label_cfg_registry_droplet', self::cfgRegistryDroplet, self::type_integer, '-1', 'reg_desc_cfg_registry_droplet')
+  	array('reg_label_cfg_registry_droplet', self::cfgRegistryDroplet, self::type_integer, '-1', 'reg_desc_cfg_registry_droplet'),
+    array('reg_label_cfg_cronjob_dir', self::cfgCronjobDir, self::type_string, '/media/upload', 'reg_desc_cfg_cronjob_dir'),
+  	array('reg_label_cfg_ftp_registry_group', self::cfgFTPregistryGroup, self::type_string, '', 'reg_desc_cfg_ftp_registry_group'),
+    array('reg_label_cfg_min_search_length', self::cfgMinSearchLength, self::type_integer, '4', 'reg_desc_cfg_min_search_length')	
   );
 
   public function __construct($createTables = false) {

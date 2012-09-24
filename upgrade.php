@@ -43,4 +43,18 @@ else {
 
 global $admin;
 
+function rrmdir($dir) {
+	foreach(glob($dir . '/*') as $file) {
+		if (is_dir($file))
+			rrmdir($file);
+		else
+			unlink($file);
+	}
+	rmdir($dir);
+} // rrmdir()
+
+if (file_exists(WB_PATH.'/modules/kit_registry/htt')) {
+	rrmdir(WB_PATH.'/modules/kit_registry/htt');
+}
+
 ?>

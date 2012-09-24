@@ -277,7 +277,7 @@ class kitRegistry {
   } // xssPrevent()
 
   /**
-   * Action handler of class kitDirList
+   * Action handler of class kitRegistry
    */
 	public function action() {
 		// check if there are errors...

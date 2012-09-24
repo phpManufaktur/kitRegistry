@@ -64,8 +64,11 @@ define('reg_content_login_wb',								'<p>Damit Sie auf die Dateien in diesem Ve
 define('reg_content_login_kit',								'<p>Damit Sie auf die Dateien in diesem Verzeichnis zugreifen können, müssen Sie sich zunächst <a href="%s">mit Ihrem Benutzernamen und Ihrem Passwort anmelden</a>.</p><p>Nach der Anmeldung werden Sie automatisch wieder hierher geleitet.</p>');
 
 define('reg_desc_cfg_allowed_files',					'Zulässige Dateitypen, legen Sie die entsprechenden Dateiendungen (Typen) fest - ohne führenden Punkt, Kleinschreibung, trennen Sie die einzelnen Dateiendungen mit einem Komma');
+define('reg_desc_cfg_cronjob_dir',            'Das Verzeichnis, in das per FTP Daten übertragen werden, die automatisch von kitRegistry übernommen werden sollen.');
 define('reg_desc_cfg_exec',										'Legen Sie fest, ob kitRegistry ausgeführt wird (1=JA, 0=Nein).');
+define('reg_desc_cfg_ftp_registry_group',     'Die Gruppe, in die per FTP hochgeladene Dokumente zugeordnet werden');
 define('reg_desc_cfg_list_tabs',							'Bestimmen Sie die Reihenfolge der TABs, die in der Übersichtsliste verwendet werden.');
+define('reg_desc_cfg_min_search_length',      'Minimale Länge des Suchbegriffes');
 define('reg_desc_cfg_registry_droplet',				'Geben Sie die PAGE ID der Seite an, auf der Sie das Droplet [[kit_registry]] einsetzen. kitRegistry benötigt diese Information, damit bei einem direkten Aufruf von Dateien ggf. der LOGIN Dialog aufgerufen werden kann.');
 
 define('reg_error_cfg_id',										'<p>Der Konfigurationsdatensatz mit der <b>ID %05d</b> konnte nicht ausgelesen werden!</p>');
@@ -131,8 +134,11 @@ define('reg_intro_search',										'Geben Sie den Begriff ein, nach dem das Arc
 
 define('reg_label_cfg_allowed_files',					'Erlaubte Dateitypen');
 define('reg_label_cfg_exec',									'kitRegistry ausführen');
+define('reg_label_cfg_ftp_registry_group',    'Gruppe für Uploads');
 define('reg_label_cfg_list_tabs',							'Listen TAB\'s');
+define('reg_label_cfg_min_search_length',     'Minimale Länge des Suchbegriff');
 define('reg_label_cfg_registry_droplet',			'Login PAGE_ID');
+define('reg_label_cfg_cronjob_dir',           'Uploadverzeichnis');
 define('reg_label_content',										'Inhalt der Datei');
 define('reg_label_content_groups',						'zugeordnete Gruppen');
 define('reg_label_description',								'Beschreibung');
@@ -177,6 +183,7 @@ define('reg_msg_registry_updated',						'<p>Der Datensatz für die Datei <b>%s</
 define('reg_msg_search_empty',								'<p>Sie haben keinen Suchbegriff eingegeben!</p>');
 define('reg_msg_search_no_hit',								'<p>Die Suche nach dem Begriff <b>%s</b> ergab leider keinen Treffer!</p>');
 define('reg_msg_search_hits',									'<p>Die Suche nach dem Begriff <b>%s</b> ergab <b>%d</b> Treffer:</p>');
+define('reg_msg_search_str_length',           '<p>Der Suchbegriff muss mindestens %d Zeichen lang sein!</p>');
 define('reg_msg_tab_empty',										'<p>Dieser TAB enhält keine Einträge!</p>');
 
 define('reg_protect_none',										'- nicht geschützt -');

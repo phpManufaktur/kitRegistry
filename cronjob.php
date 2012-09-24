@@ -14,11 +14,18 @@ require_once('../../config.php');
 
 require_once WB_PATH.'/modules/kit_registry/initialize.php';
 require_once WB_PATH.'/framework/functions.php';
+require_once WB_PATH.'/modules/kit_registry/class.registry.php';
 
 class checkRegistryUpload {
 
-  private $upload_directory = '/media/upload';
-  private $registry_group = 'werkszeugnisse';
+  private $upload_directory = null;
+  private $registry_group = null;
+  
+  public function __construct() {
+  	$cfg = new dbKITregistryCfg();
+  	$this->upload_directory = $cfg->getValue(dbKITregistryCfg::cfgCronjobDir);
+  	$this->registry_group = $cfg->getValue(dbKITregistryCfg::cfgFTPregistryGroup);
+  } // __construct()
 
   /**
    * Iterate directory tree very efficient
@@ -64,7 +71,7 @@ class checkRegistryUpload {
     global $dbKITregistryFiles;
     $path = WB_PATH.$this->upload_directory;
     if (!file_exists($path)) {
-      @mkdir($path, 0755);
+      @mkdir($path, 0755, true);
     }
     $files = $this->getDirectoryTree($path);
     foreach ($files as $file) {
@@ -91,7 +98,7 @@ class checkRegistryUpload {
         $sub_directory = $registry_filename[0];
         $registry_path = WB_PATH.'/media/kit_protected/registry/'.$sub_directory;
         if (!file_exists($registry_path)) {
-          @mkdir($registry_path);
+          @mkdir($registry_path, 0755, true);
         }
         $registry_path .= '/'.$registry_filename;
 
@@ -103,8 +110,8 @@ class checkRegistryUpload {
             dbKITregistryFiles::field_filename_registry => basename($registry_filename),
             dbKITregistryFiles::field_filepath_registry => $registry_path,
             dbKITregistryFiles::field_filetype => strtolower($path_info['extension']),
-            dbKITregistryFiles::field_filesize => filesize($file),
-            dbKITregistryFiles::field_filemtime => filemtime($file),
+            dbKITregistryFiles::field_filesize => filesize($registry_path),
+            dbKITregistryFiles::field_filemtime => filemtime($registry_path),
             dbKITregistryFiles::field_sub_dir => $sub_directory,
             dbKITregistryFiles::field_content_groups => $this->registry_group,
             dbKITregistryFiles::field_protect => dbKITregistryFiles::protect_none,

@@ -108,34 +108,3 @@ if (!$checked) {
 			'STATUS' => false
 	);
 }
-
-
-
-/*
-// Checking Requirements
-
-$PRECHECK['PHP_VERSION'] = array('VERSION' => '5.2.0', 'OPERATOR' => '>=');
-$PRECHECK['WB_ADDONS'] = array(
-	'dbconnect_le'	=> array('VERSION' => '0.70', 'OPERATOR' => '>='),
-	'dwoo' => array('VERSION' => '0.14', 'OPERATOR' => '>='),
-	'droplets' => array('VERSION' => '1.0', 'OPERATOR' => '>='),
-	'kit' => array('VERSION' => '0.61', 'OPERATOR' => '>='),
-	'kit_dirlist' => array('VERSION' => '0.29', 'OPERATOR' => '>=')
-);
-
-global $database;
-$sql = "SELECT `value` FROM `".TABLE_PREFIX."settings` WHERE `name`='default_charset'";
-$result = $database->query($sql);
-if ($result) {
-	$data = $result->fetchRow(MYSQL_ASSOC);
-	$PRECHECK['CUSTOM_CHECKS'] = array(
-		'Default Charset' => array(
-			'REQUIRED' => 'utf-8',
-			'ACTUAL' => $data['value'],
-			'STATUS' => ($data['value'] === 'utf-8')
-		)
-	);
-}
-
-
-?> */
